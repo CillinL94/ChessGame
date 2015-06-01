@@ -10,473 +10,473 @@
 //
 class c0_4unity_chess
 {
-var c0_position="";
-var c0_side=1;
-var c0_sidemoves=1;
-var c0_moving=false;
-var c0_waitmove=false;
-
-var c0_wKingmoved = false;
-var c0_bKingmoved = false;
-var c0_wLRockmoved = false;
-var c0_wRRockmoved = false;
-var c0_bLRockmoved = false;
-var c0_bRRockmoved = false;
-var c0_w00 = false;
-var c0_b00 = false;
-
-var c0_lastmovepawn = 0;
-
-var c0_become="";
-var c0_become_from_engine="";			// just engine
-
-var c0_moveslist = "";
-
-// on piece moved event...
-//var c0_moved_callback="";
-// replaced with queue of movements delivered to 3d part above
-var c0_moves2do="";
-
-var c0_foundmove="";
-
-var c0_start_FEN="";
-var c0_fischer=false;
-var c0_fischer_cst="";
-
-var c0_PG_viewer=true;		// Set true for on-error-prints/ false for silent processing...
-
-var c0_PG_1="";
-
-var c0_PGN_header= new Array();
-
-var c0_errflag=false;
-
-var PGN_text="";					// PGN support, the game data will be here....
-var c0_NAGs="";
-
-function c0_4unity_chess() {}
-function charCodeAt(str:String, at:int):int { return System.Convert.ToInt32(str[at]); }
-function fromCharCode(cd:int) :String { return (""+System.Convert.ToChar(cd)); }
-
-function parseInt(nstr:String):int
-	{
-	var rv=0;
-	if(nstr.length>0 && (("0123456789").IndexOf(nstr.Substring(0,1))>=0)) rv=System.Convert.ToInt32(nstr);
-	return rv;
-	}
+	var c0_position="";
+	var c0_side=1;
+	var c0_sidemoves=1;
+	var c0_moving=false;
+	var c0_waitmove=false;
 	
-var c0_peka=fromCharCode(34);
+	var c0_wKingmoved = false;
+	var c0_bKingmoved = false;
+	var c0_wLRockmoved = false;
+	var c0_wRRockmoved = false;
+	var c0_bLRockmoved = false;
+	var c0_bRRockmoved = false;
+	var c0_w00 = false;
+	var c0_b00 = false;
+	
+	var c0_lastmovepawn = 0;
+	
+	var c0_become="";
+	var c0_become_from_engine="";			// just engine
+	
+	var c0_moveslist = "";
+	
+	// on piece moved event...
+	//var c0_moved_callback="";
+	// replaced with queue of movements delivered to 3d part above
+	var c0_moves2do="";
+	
+	var c0_foundmove="";
+	
+	var c0_start_FEN="";
+	var c0_fischer=false;
+	var c0_fischer_cst="";
+	
+	var c0_PG_viewer=true;		// Set true for on-error-prints/ false for silent processing...
+	
+	var c0_PG_1="";
+	
+	var c0_PGN_header= new Array();
+	
+	var c0_errflag=false;
+	
+	var PGN_text="";					// PGN support, the game data will be here....
+	var c0_NAGs="";
 
-function window_confirm(messtxt:String):boolean { return true; }	// No dialogs at the moment...
+	function c0_4unity_chess() {}
+	function charCodeAt(str:String, at:int):int { return System.Convert.ToInt32(str[at]); }
+	function fromCharCode(cd:int) :String { return (""+System.Convert.ToChar(cd)); }
+	
+	function parseInt(nstr:String):int
+	{
+		var rv=0;
+		if(nstr.length>0 && (("0123456789").IndexOf(nstr.Substring(0,1))>=0)) rv=System.Convert.ToInt32(nstr);
+		return rv;
+	}
+		
+	var c0_peka=fromCharCode(34);
+	
+	function window_confirm(messtxt:String):boolean { return true; }	// No dialogs at the moment...
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // set up starting position...
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function c0_set_start_position( c0_mlist:String ):void
-{
-if( c0_start_FEN.length>0 )
+	function c0_set_start_position( c0_mlist:String ):void
 	{
-	c0_set_FEN( c0_start_FEN );
-	if(c0_fischer) c0_fischer_adjustmoved();
-	}
-else
-{
-c0_position="";
-
-if(c0_mlist.length==0)
-	{
-	c0_add_piece("wpa2"); c0_add_piece("wpb2"); c0_add_piece("wpc2"); c0_add_piece("wpd2");
-	c0_add_piece("wpe2"); c0_add_piece("wpf2"); c0_add_piece("wpg2"); c0_add_piece("wph2");
-	c0_add_piece("wRa1"); c0_add_piece("wNb1"); c0_add_piece("wBc1"); c0_add_piece("wQd1");
-	c0_add_piece("wKe1"); c0_add_piece("wBf1"); c0_add_piece("wNg1"); c0_add_piece("wRh1");
-	c0_add_piece("bpa7"); c0_add_piece("bpb7"); c0_add_piece("bpc7"); c0_add_piece("bpd7");
-	c0_add_piece("bpe7"); c0_add_piece("bpf7"); c0_add_piece("bpg7"); c0_add_piece("bph7");
-	c0_add_piece("bRa8"); c0_add_piece("bNb8"); c0_add_piece("bBc8"); c0_add_piece("bQd8");
-	c0_add_piece("bKe8"); c0_add_piece("bBf8"); c0_add_piece("bNg8"); c0_add_piece("bRh8");
-	}
-else
-	{
-	c0_position = "wpa2;wpb2;wpc2;wpd2;wpe2;wpf2;wpg2;wph2;" +
-		"wRa1;wNb1;wBc1;wQd1;wKe1;wBf1;wNg1;wRh1;" +
-		"bpa7;bpb7;bpc7;bpd7;bpe7;bpf7;bpg7;bph7;" +
-		"bRa8;bNb8;bBc8;bQd8;bKe8;bBf8;bNg8;bRh8;";
-	}
-
-c0_wKingmoved = false;
-c0_bKingmoved = false;
-c0_wLRockmoved = false;
-c0_wRRockmoved = false;
-c0_bLRockmoved = false;
-c0_bRRockmoved = false;
-c0_w00 = false;
-c0_b00 = false;
-
-c0_lastmovepawn = 0;
-c0_sidemoves=1;
-}
-
-c0_become="";
-c0_become_from_engine="";			// just engine
-
-c0_moveslist = "";
-
-c0_moving=false;
-
-if(c0_mlist.length>0)
-	{
-	for(var c0_z=0;c0_z<c0_mlist.length;c0_z+=4)
+		if( c0_start_FEN.length>0 )
 		{
-		var c0_from_at=c0_mlist.Substring(c0_z,2);
-		var c0_to_at=c0_mlist.Substring(c0_z+2,2);
-		if(c0_z+4<c0_mlist.length && c0_mlist.Substring(c0_z+4,1)=="[")
+			c0_set_FEN( c0_start_FEN );
+			if(c0_fischer) c0_fischer_adjustmoved();
+		}
+		else
+		{
+			c0_position="";
+		
+			if(c0_mlist.length==0)
 			{
-			c0_become_from_engine=c0_mlist.Substring(c0_z+5,1);
-			c0_z+=3;
+				c0_add_piece("wpa2"); c0_add_piece("wpb2"); c0_add_piece("wpc2"); c0_add_piece("wpd2");
+				c0_add_piece("wpe2"); c0_add_piece("wpf2"); c0_add_piece("wpg2"); c0_add_piece("wph2");
+				c0_add_piece("wRa1"); c0_add_piece("wNb1"); c0_add_piece("wBc1"); c0_add_piece("wQd1");
+				c0_add_piece("wKe1"); c0_add_piece("wBf1"); c0_add_piece("wNg1"); c0_add_piece("wRh1");
+				c0_add_piece("bpa7"); c0_add_piece("bpb7"); c0_add_piece("bpc7"); c0_add_piece("bpd7");
+				c0_add_piece("bpe7"); c0_add_piece("bpf7"); c0_add_piece("bpg7"); c0_add_piece("bph7");
+				c0_add_piece("bRa8"); c0_add_piece("bNb8"); c0_add_piece("bBc8"); c0_add_piece("bQd8");
+				c0_add_piece("bKe8"); c0_add_piece("bBf8"); c0_add_piece("bNg8"); c0_add_piece("bRh8");
 			}
-		else c0_become_from_engine="";
-
-		if(c0_fischer) c0_fischer_cstl_move(c0_from_at+c0_to_at,false);		
-		else 
-		c0_moveto(c0_convH888(c0_from_at), c0_convH888(c0_to_at), false);
-		c0_sidemoves=-c0_sidemoves;
+			else
+			{
+				c0_position = "wpa2;wpb2;wpc2;wpd2;wpe2;wpf2;wpg2;wph2;" +
+					"wRa1;wNb1;wBc1;wQd1;wKe1;wBf1;wNg1;wRh1;" +
+					"bpa7;bpb7;bpc7;bpd7;bpe7;bpf7;bpg7;bph7;" +
+					"bRa8;bNb8;bBc8;bQd8;bKe8;bBf8;bNg8;bRh8;";
+			}
+		
+			c0_wKingmoved = false;
+			c0_bKingmoved = false;
+			c0_wLRockmoved = false;
+			c0_wRRockmoved = false;
+			c0_bLRockmoved = false;
+			c0_bRRockmoved = false;
+			c0_w00 = false;
+			c0_b00 = false;
+		
+			c0_lastmovepawn = 0;
+			c0_sidemoves=1;
 		}
-	if( c0_start_FEN.length>0 )
+	
+		c0_become="";
+		c0_become_from_engine="";			// just engine
+		
+		c0_moveslist = "";
+		
+		c0_moving=false;
+	
+		if(c0_mlist.length>0)
 		{
-		c0_set_board_situation( c0_position, c0_wKingmoved, c0_wLRockmoved, c0_wRRockmoved, c0_w00, c0_bKingmoved, c0_bLRockmoved, c0_bRRockmoved, c0_b00, c0_lastmovepawn, c0_moveslist, c0_sidemoves );
+			for(var c0_z=0;c0_z<c0_mlist.length;c0_z+=4)
+			{
+				var c0_from_at=c0_mlist.Substring(c0_z,2);
+				var c0_to_at=c0_mlist.Substring(c0_z+2,2);
+				if(c0_z+4<c0_mlist.length && c0_mlist.Substring(c0_z+4,1)=="[")
+				{
+					c0_become_from_engine=c0_mlist.Substring(c0_z+5,1);
+					c0_z+=3;
+				}
+				else c0_become_from_engine="";
+		
+				if(c0_fischer) c0_fischer_cstl_move(c0_from_at+c0_to_at,false);		
+				else c0_moveto(c0_convH888(c0_from_at), c0_convH888(c0_to_at), false);
+				
+				c0_sidemoves=-c0_sidemoves;
+			}
+			if( c0_start_FEN.length>0 )
+			{
+				c0_set_board_situation( c0_position, c0_wKingmoved, c0_wLRockmoved, c0_wRRockmoved, c0_w00, c0_bKingmoved, c0_bLRockmoved, c0_bRRockmoved, c0_b00, c0_lastmovepawn, c0_moveslist, c0_sidemoves );
+			}
+			else
+			{
+				var c0_pos2=c0_position;
+				c0_position="";
+				for(var c0_q=0;c0_q<c0_pos2.length;c0_q+=5) c0_add_piece(c0_pos2.Substring(c0_q,4));
+			}
 		}
-	else
-		{
-		var c0_pos2=c0_position;
-		c0_position="";
-		for(var c0_q=0;c0_q<c0_pos2.length;c0_q+=5) c0_add_piece(c0_pos2.Substring(c0_q,4));
-		}
+	
+		c0_moveslist = c0_mlist;
 	}
-
-c0_moveslist = c0_mlist;
-}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Set board situation...
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function c0_set_board_situation( c0_figlist:String, c0_wK:boolean, c0_wLR:boolean, c0_wRR:boolean,
-		c0_w_00:boolean, c0_bK:boolean, c0_bLR:boolean, c0_bRR:boolean, c0_b_00:boolean, c0_elpas:int, c0_ml:String, c0_s:int ):void
-{
-c0_moving=false;
-
-c0_position="";
-for( var i=0; i<c0_figlist.length; )
+	function c0_set_board_situation( c0_figlist:String, c0_wK:boolean, c0_wLR:boolean, c0_wRR:boolean,
+			c0_w_00:boolean, c0_bK:boolean, c0_bLR:boolean, c0_bRR:boolean, c0_b_00:boolean, c0_elpas:int, c0_ml:String, c0_s:int ):void
 	{
-	c0_add_piece( c0_figlist.Substring(i,4) );
-	i+=4; if( i<c0_figlist.length && c0_figlist.Substring(i,1)==";" ) i++;
+		c0_moving=false;
+		
+		c0_position="";
+		for( var i=0; i<c0_figlist.length; )
+		{
+			c0_add_piece( c0_figlist.Substring(i,4) );
+			i+=4; if( i<c0_figlist.length && c0_figlist.Substring(i,1)==";" ) i++;
+		}
+	
+		c0_wKingmoved = c0_wK;
+		c0_bKingmoved = c0_bK;
+		c0_wLRockmoved = c0_wLR;
+		c0_wRRockmoved = c0_wRR;
+		c0_bLRockmoved = c0_bLR;
+		c0_bRRockmoved = c0_bRR;
+		c0_w00 = c0_w_00;
+		c0_b00 = c0_b_00;
+	
+		c0_lastmovepawn = c0_elpas;
+	
+		c0_become="";
+		c0_become_from_engine="";			// just engine
+		
+		c0_moveslist = c0_ml;
+		c0_sidemoves=c0_s;
 	}
-
-c0_wKingmoved = c0_wK;
-c0_bKingmoved = c0_bK;
-c0_wLRockmoved = c0_wLR;
-c0_wRRockmoved = c0_wRR;
-c0_bLRockmoved = c0_bLR;
-c0_bRRockmoved = c0_bRR;
-c0_w00 = c0_w_00;
-c0_b00 = c0_b_00;
-
-c0_lastmovepawn = c0_elpas;
-
-c0_become="";
-c0_become_from_engine="";			// just engine
-
-c0_moveslist = c0_ml;
-c0_sidemoves=c0_s;
-}
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // add a piece at position...
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function c0_add_piece( c0_pstring:String ):void
-{
-var c0_1_at=c0_pstring.Substring(2,2);
-var c0_1_figure=c0_pstring.Substring(1,1);
-var c0_1_color=c0_pstring.Substring(0,1);
-
-// There were other visual activities before...
-if(c0_position.IndexOf(c0_1_at)<0) c0_position+=c0_pstring+";";
-}
+	function c0_add_piece( c0_pstring:String ):void
+	{
+		var c0_1_at=c0_pstring.Substring(2,2);
+		var c0_1_figure=c0_pstring.Substring(1,1);
+		var c0_1_color=c0_pstring.Substring(0,1);
+		
+		// There were other visual activities before...
+		if(c0_position.IndexOf(c0_1_at)<0) c0_position+=c0_pstring+";";
+	}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // remove a piece from position...
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function c0_clear_at( c0_1_at:String ):void
-{
-var c0_a=c0_position.IndexOf(c0_1_at);
-if(c0_a>=0) c0_position=c0_position.Substring(0,c0_a-2) + c0_position.Substring(c0_a+3);
-}
+	function c0_clear_at( c0_1_at:String ):void
+	{
+		var c0_a=c0_position.IndexOf(c0_1_at);
+		if(c0_a>=0) c0_position=c0_position.Substring(0,c0_a-2) + c0_position.Substring(c0_a+3);
+	}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // move visualy a piece...
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function c0_just_move_piece( c0_2_from:String, c0_2_to:String ):void
-{
-c0_clear_at( c0_2_to );
-var c0_a=c0_position.IndexOf(c0_2_from);
-if(c0_a>=0)
+	function c0_just_move_piece( c0_2_from:String, c0_2_to:String ):void
 	{
-	var c0_2_figure = c0_position.Substring(c0_a-1,1);
-	var c0_2_color = c0_position.Substring(c0_a-2,1);
-	c0_position=c0_position.Replace( c0_2_from, c0_2_to );
-	c0_moves2do+=c0_2_from+c0_2_to;
-	c0_moving=true;
+		c0_clear_at( c0_2_to );
+		var c0_a=c0_position.IndexOf(c0_2_from);
+		if(c0_a>=0)
+		{
+			var c0_2_figure = c0_position.Substring(c0_a-1,1);
+			var c0_2_color = c0_position.Substring(c0_a-2,1);
+			c0_position=c0_position.Replace( c0_2_from, c0_2_to );
+			c0_moves2do+=c0_2_from+c0_2_to;
+			c0_moving=true;
+		}
 	}
-}
 // and add a promotion (or castling) indicator...
-function c0_and_promote_or_castle():void
-{
- if(c0_become.length>0) c0_moves2do+="["+c0_become+"]";
-}
+	function c0_and_promote_or_castle():void
+	{
+		if(c0_become.length>0) c0_moves2do+="["+c0_become+"]";
+	}
 
 
 //############################################################
 // CHESS related part for chess play
 //############################################################
 //-------------------------------------------------
-function c0_convE2(c0_vertikali:int,c0_horizontali:int):String
-{
-return fromCharCode(96+c0_horizontali)+c0_vertikali.ToString();
-}
+	function c0_convE2(c0_vertikali:int,c0_horizontali:int):String
+	{
+		return fromCharCode(96+c0_horizontali)+c0_vertikali.ToString();
+	}
 
 //-------------------------------------------------
-function c0_convE777(c0_verthoriz:String):String
-{
-return fromCharCode(96+parseInt(c0_verthoriz.Substring(1,1)))+c0_verthoriz.Substring(0,1);
-}
+	function c0_convE777(c0_verthoriz:String):String
+	{
+		return fromCharCode(96+parseInt(c0_verthoriz.Substring(1,1)))+c0_verthoriz.Substring(0,1);
+	}
 
 //-------------------------------------------------
-function c0_conv52(c0_vertikali:int,c0_horizontali:int):String
-{
-return c0_vertikali.ToString()+c0_horizontali.ToString();
-}
+	function c0_conv52(c0_vertikali:int,c0_horizontali:int):String
+	{
+		return c0_vertikali.ToString()+c0_horizontali.ToString();
+	}
 
 //-------------------------------------------------
-function c0_convH888(c0_at8:String):String
-{
-var c0_8horiz=charCodeAt(c0_at8,0) - 96;
-var c0_8vert=parseInt(c0_at8.Substring(1,1));
-return c0_8vert.ToString() + c0_8horiz.ToString();
-}
+	function c0_convH888(c0_at8:String):String
+	{
+		var c0_8horiz=charCodeAt(c0_at8,0) - 96;
+		var c0_8vert=parseInt(c0_at8.Substring(1,1));
+		return c0_8vert.ToString() + c0_8horiz.ToString();
+	}
 
 //-------------------------------------------------
-function c0_move_to(c0_Zstr1:String,c0_Zstr2:String):void
-{
-c0_moveto( c0_convH888(c0_Zstr1), c0_convH888(c0_Zstr2), true );
-}
+	function c0_move_to(c0_Zstr1:String,c0_Zstr2:String):void
+	{
+		c0_moveto( c0_convH888(c0_Zstr1), c0_convH888(c0_Zstr2), true );
+	}
 
 
 //-------------------------------------------------
-function c0_moveto(c0_from_at:String, c0_to_at:String, c0_draw:boolean):void
-{
-var c0_vert = parseInt(c0_from_at.Substring(0,1));
-var c0_horiz= parseInt(c0_from_at.Substring(1,1));
-var c0_vert2 = parseInt(c0_to_at.Substring(0,1));
-var c0_horiz2= parseInt(c0_to_at.Substring(1,1));
-
-var c0_p=c0_position.IndexOf( c0_convE2(c0_vert,c0_horiz) );
-var c0_color=c0_position.Substring(c0_p-2,1);
-var c0_figure=c0_position.Substring(c0_p-1,1);
-
-var save_c0_position=c0_position;
+	function c0_moveto(c0_from_at:String, c0_to_at:String, c0_draw:boolean):void
+	{
+		var c0_vert = parseInt(c0_from_at.Substring(0,1));
+		var c0_horiz= parseInt(c0_from_at.Substring(1,1));
+		var c0_vert2 = parseInt(c0_to_at.Substring(0,1));
+		var c0_horiz2= parseInt(c0_to_at.Substring(1,1));
+		
+		var c0_p=c0_position.IndexOf( c0_convE2(c0_vert,c0_horiz) );
+		var c0_color=c0_position.Substring(c0_p-2,1);
+		var c0_figure=c0_position.Substring(c0_p-1,1);
+		
+		var save_c0_position=c0_position;
+		
+		c0_lastmovepawn = 0; 
+		if(c0_draw) c0_become="";
 	
-c0_lastmovepawn = 0; 
-if(c0_draw) c0_become="";
-
- if(c0_draw)
-	{
-	save_c0_position=c0_position;
-	c0_just_move_piece( c0_convE2(c0_vert, c0_horiz), c0_convE2(c0_vert2, c0_horiz2) );
-	c0_position=save_c0_position;
-	}
-
- var c0_p2=c0_position.IndexOf( c0_convE2(c0_vert2,c0_horiz2) );
- if(c0_p2>=0)
-  {
-   c0_position = c0_position.Substring(0,c0_p2-2) + c0_position.Substring(c0_p2+3);
-   
-   if(!c0_wLRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="a1") c0_wLRockmoved=true;
-   if(!c0_wRRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="h1") c0_wRRockmoved=true;
-   if(!c0_bLRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="a8") c0_bLRockmoved=true;
-   if(!c0_bRRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="h8") c0_bRRockmoved=true;
- 
-  }
- else
-  {		
-   if(c0_figure=="R")
-    {
-     if(c0_color=="w")
-	{
-	 if(c0_convE2(c0_vert,c0_horiz)=="a1") c0_wLRockmoved=true;
-	 if(c0_convE2(c0_vert,c0_horiz)=="h1") c0_wRRockmoved=true;
-	}
-     else
-	{
-	 if(c0_convE2(c0_vert,c0_horiz)=="a8") c0_bLRockmoved=true;
-	 if(c0_convE2(c0_vert,c0_horiz)=="h8") c0_bRRockmoved=true;
-	}
-    }
-   
-	
-   if(c0_figure=="K")
-    {
-    if(!c0_wKingmoved && c0_color=="w")
-	{
-	if(c0_convE2(c0_vert,c0_horiz)=="e1" && c0_convE2(c0_vert2,c0_horiz2)=="g1")	// 0-0
-		{
 		if(c0_draw)
 		{
-		save_c0_position=c0_position;
-		c0_just_move_piece("h1","f1");
-		c0_position=save_c0_position;
-		}
-		c0_position = c0_position.Replace( "h1", "f1" );		// Rf1
-		c0_w00 = true;
-		c0_become="0";
-		}
-	if(c0_convE2(c0_vert,c0_horiz)=="e1" && c0_convE2(c0_vert2,c0_horiz2)=="c1")	// 0-0-0
-		{
-		if(c0_draw)
-		{
-		save_c0_position=c0_position;
-		c0_just_move_piece("a1","d1");
-		c0_position=save_c0_position;
-		}
-		c0_position = c0_position.Replace( "a1", "d1" );		// Rd1
-		c0_w00 = true;
-		c0_become="0";
-		}
-	c0_wKingmoved=true;
-	}
-    if(!c0_bKingmoved && c0_color=="b")
-	{
-	if(c0_convE2(c0_vert,c0_horiz)=="e8" && c0_convE2(c0_vert2,c0_horiz2)=="g8")	// 0-0
-		{
-		if(c0_draw)
-		{
-		save_c0_position=c0_position;
-		c0_just_move_piece("h8","f8");
-		c0_position=save_c0_position;
-		}
-		c0_position = c0_position.Replace( "h8", "f8" );		// Rf8
-		c0_b00 = true;
-		c0_become="0";
-		}
-	if(c0_convE2(c0_vert,c0_horiz)=="e8" && c0_convE2(c0_vert2,c0_horiz2)=="c8")	// 0-0-0
-		{
-		if(c0_draw)
-		{
-		save_c0_position=c0_position;
-		c0_just_move_piece("a8","d8");
-		c0_position=save_c0_position;
-		}
-		c0_position = c0_position.Replace( "a8", "d8" );		// Rd8
-		c0_b00 = true;
-		c0_become="0";
-		}
-	c0_bKingmoved=true;
-	}
-    }	
-  }
-
- if(c0_figure=="p")		// pawn
-	{
-	 if(c0_vert2==8 || c0_vert2==1)
-		{
-		if(c0_become_from_engine.length>0)
-		 {
-		  c0_figure= c0_become_from_engine;
-		 }
-		else
-		 {
-		 if(c0_draw)
-			{
-			 if(window_confirm("Promote a QUEEN?"))
-				{
-				c0_figure = "Q";
-				}
-			 else if(window_confirm("Then a ROOK?"))
-				{
-				c0_figure = "R";
-				}
-			 else if(window_confirm("Maybe a BISHOP?"))
-				{
-				c0_figure = "B";
-				}
-			 else if(window_confirm("Really a KNIGHT????"))
-				{
-				c0_figure = "N";
-				}
-			 else
-				{
-				//print("I know, You need a new QUEEN.");
-				c0_figure = "Q";
-				}
-			 }	
-			else c0_figure="Q";
-		  }
-		if(c0_draw)
-			{
-			c0_become=c0_figure;
-																		// just put in queue... (no,will be detected above in 3D)...
-			//save_c0_position=c0_position;
-			//c0_moves2do+=c0_convE2(c0_vert2,c0_horiz2) + "=" + c0_become;
-			//c0_position=save_c0_position;
-			}
-		c0_position = c0_position.Replace( "p"+c0_convE2(c0_vert,c0_horiz), c0_figure+c0_convE2(c0_vert,c0_horiz) );
-		}
-	 if(c0_p2<0 && c0_horiz!=c0_horiz2)
-		{
-		if(c0_draw)
-			{
 			save_c0_position=c0_position;
-			c0_clear_at( c0_convE2(c0_vert,c0_horiz2) );
+			c0_just_move_piece( c0_convE2(c0_vert, c0_horiz), c0_convE2(c0_vert2, c0_horiz2) );
 			c0_position=save_c0_position;
-			}
-		var c0_p3=c0_position.IndexOf( c0_convE2(c0_vert,c0_horiz2) );
-		c0_position = c0_position.Substring(0,c0_p3-2) + c0_position.Substring(c0_p3+3);
 		}
-	 if((c0_vert==2 && c0_vert2==4) || (c0_vert==7 && c0_vert2==5)) c0_lastmovepawn = c0_horiz;
+	
+		var c0_p2=c0_position.IndexOf( c0_convE2(c0_vert2,c0_horiz2) );
+		if(c0_p2>=0)
+	 	{
+		    c0_position = c0_position.Substring(0,c0_p2-2) + c0_position.Substring(c0_p2+3);
+		   
+		    if(!c0_wLRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="a1") c0_wLRockmoved=true;
+		    if(!c0_wRRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="h1") c0_wRRockmoved=true;
+		    if(!c0_bLRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="a8") c0_bLRockmoved=true;
+		    if(!c0_bRRockmoved && c0_convE2(c0_vert2,c0_horiz2)=="h8") c0_bRRockmoved=true;	 
+	   }
+	   else
+	   {		
+			if(c0_figure=="R")
+			{
+				if(c0_color=="w")
+				{
+					if(c0_convE2(c0_vert,c0_horiz)=="a1") c0_wLRockmoved=true;
+					if(c0_convE2(c0_vert,c0_horiz)=="h1") c0_wRRockmoved=true;
+				}
+				else
+				{
+					if(c0_convE2(c0_vert,c0_horiz)=="a8") c0_bLRockmoved=true;
+					if(c0_convE2(c0_vert,c0_horiz)=="h8") c0_bRRockmoved=true;
+				}
+			}
+			
+			
+			if(c0_figure=="K")
+			{
+				if(!c0_wKingmoved && c0_color=="w")
+				{
+					if(c0_convE2(c0_vert,c0_horiz)=="e1" && c0_convE2(c0_vert2,c0_horiz2)=="g1")	// 0-0
+					{
+						if(c0_draw)
+						{
+							save_c0_position=c0_position;
+							c0_just_move_piece("h1","f1");
+							c0_position=save_c0_position;
+						}
+						c0_position = c0_position.Replace( "h1", "f1" );		// Rf1
+						c0_w00 = true;
+						c0_become="0";
+					}
+					if(c0_convE2(c0_vert,c0_horiz)=="e1" && c0_convE2(c0_vert2,c0_horiz2)=="c1")	// 0-0-0
+					{
+						if(c0_draw)
+						{
+							save_c0_position=c0_position;
+							c0_just_move_piece("a1","d1");
+							c0_position=save_c0_position;
+						}
+						c0_position = c0_position.Replace( "a1", "d1" );		// Rd1
+						c0_w00 = true;
+						c0_become="0";
+					}
+					c0_wKingmoved=true;
+				}
+				if(!c0_bKingmoved && c0_color=="b")
+				{
+					if(c0_convE2(c0_vert,c0_horiz)=="e8" && c0_convE2(c0_vert2,c0_horiz2)=="g8")	// 0-0
+					{
+						if(c0_draw)
+						{
+							save_c0_position=c0_position;
+							c0_just_move_piece("h8","f8");
+							c0_position=save_c0_position;
+						}
+						c0_position = c0_position.Replace( "h8", "f8" );		// Rf8
+						c0_b00 = true;
+						c0_become="0";
+					}
+					if(c0_convE2(c0_vert,c0_horiz)=="e8" && c0_convE2(c0_vert2,c0_horiz2)=="c8")	// 0-0-0
+					{
+						if(c0_draw)
+						{
+							save_c0_position=c0_position;
+							c0_just_move_piece("a8","d8");
+							c0_position=save_c0_position;
+						}
+						c0_position = c0_position.Replace( "a8", "d8" );		// Rd8
+						c0_b00 = true;
+						c0_become="0";
+					}
+					c0_bKingmoved=true;
+				}
+			}	
+		}
+	
+		if(c0_figure=="p")		// pawn
+		{
+			if(c0_vert2==8 || c0_vert2==1)
+			{
+				if(c0_become_from_engine.length>0)
+				{
+					c0_figure= c0_become_from_engine;
+				}
+				else
+				{
+					if(c0_draw)
+					{
+						if(window_confirm("Promote a QUEEN?"))
+						{
+							c0_figure = "Q";
+						}
+						else if(window_confirm("Then a ROOK?"))
+						{
+							c0_figure = "R";
+						}
+						else if(window_confirm("Maybe a BISHOP?"))
+						{
+							c0_figure = "B";
+						}
+						else if(window_confirm("Really a KNIGHT????"))
+						{
+							c0_figure = "N";
+						}
+						else
+						{
+							//print("I know, You need a new QUEEN.");
+							c0_figure = "Q";
+						}
+					}	
+					else c0_figure="Q";
+				}
+				if(c0_draw)
+				{
+					c0_become=c0_figure;
+																			// just put in queue... (no,will be detected above in 3D)...
+					//save_c0_position=c0_position;
+					//c0_moves2do+=c0_convE2(c0_vert2,c0_horiz2) + "=" + c0_become;
+					//c0_position=save_c0_position;
+				}
+				c0_position = c0_position.Replace( "p"+c0_convE2(c0_vert,c0_horiz), c0_figure+c0_convE2(c0_vert,c0_horiz) );
+			}
+			if(c0_p2<0 && c0_horiz!=c0_horiz2)
+			{
+				if(c0_draw)
+				{
+					save_c0_position=c0_position;
+					c0_clear_at( c0_convE2(c0_vert,c0_horiz2) );
+					c0_position=save_c0_position;
+				}
+				var c0_p3=c0_position.IndexOf( c0_convE2(c0_vert,c0_horiz2) );
+				c0_position = c0_position.Substring(0,c0_p3-2) + c0_position.Substring(c0_p3+3);
+			}
+			if((c0_vert==2 && c0_vert2==4) || (c0_vert==7 && c0_vert2==5)) c0_lastmovepawn = c0_horiz;
+		}
+		
+		c0_position = c0_position.Replace( c0_convE2(c0_vert,c0_horiz), c0_convE2(c0_vert2,c0_horiz2) );
+		
+		if(c0_draw)
+		{
+			c0_moveslist += c0_convE2(c0_vert,c0_horiz) + c0_convE2(c0_vert2,c0_horiz2) + ((c0_become.length>0) ? "["+c0_become+"]" : "");
+			c0_and_promote_or_castle();
+		}
+	
 	}
 
- c0_position = c0_position.Replace( c0_convE2(c0_vert,c0_horiz), c0_convE2(c0_vert2,c0_horiz2) );
-
- if(c0_draw)
-  {
-  c0_moveslist += c0_convE2(c0_vert,c0_horiz) + c0_convE2(c0_vert2,c0_horiz2) + ((c0_become.length>0) ? "["+c0_become+"]" : "");
-  c0_and_promote_or_castle();
-  }
-
-}
+//-------------------------------------------------
+	function c0_D_last_move_was():String
+	{
+		var c0_ret="";
+		if( c0_moveslist.length>0 )
+		{
+			if (c0_moveslist.Substring( c0_moveslist.length-1, 1 )=="]" ) c0_ret= c0_moveslist.Substring( c0_moveslist.length-7, 7 );
+			else c0_ret= c0_moveslist.Substring( c0_moveslist.length-4, 4 );
+		}
+		return c0_ret;
+	}
 
 //-------------------------------------------------
-function c0_D_last_move_was():String
-{
-var c0_ret="";
-if( c0_moveslist.length>0 )
- {
- if (c0_moveslist.Substring( c0_moveslist.length-1, 1 )=="]" ) c0_ret= c0_moveslist.Substring( c0_moveslist.length-7, 7 );
- else c0_ret= c0_moveslist.Substring( c0_moveslist.length-4, 4 );
- }
-return c0_ret;
-}
-
-//-------------------------------------------------
-function c0_take_back():void
-{
-var c0_movespre="";
-if( c0_moveslist.length>0 )
- {
- if (c0_moveslist.Substring( c0_moveslist.length-1, 1 )=="]" ) c0_movespre= c0_moveslist.Substring( 0, c0_moveslist.length-7 );
- else c0_movespre= c0_moveslist.Substring( 0, c0_moveslist.length-4 );
- }
-
-c0_set_start_position( c0_movespre );
-}
+	function c0_take_back():void
+	{
+		var c0_movespre="";
+		if( c0_moveslist.length>0 )
+		{
+			if (c0_moveslist.Substring( c0_moveslist.length-1, 1 )=="]" ) 
+			{c0_movespre= c0_moveslist.Substring( 0, c0_moveslist.length-7 );}
+			else 
+			{c0_movespre= c0_moveslist.Substring( 0, c0_moveslist.length-4 );}
+		}
+		c0_set_start_position( c0_movespre );
+	}
 
 
 //-------------------------------------------------
@@ -501,13 +501,13 @@ function c0_is_empty(c0_Zvert:int, c0_Zhoriz:int):boolean
 
 
 //-------------------------------------------------
-function c0_D_what_at(c0_Zstr1:String):String
-{
- var c0_ret="";
- var c0_pz2=c0_position.IndexOf( c0_Zstr1 );
- if(c0_pz2>=0) c0_ret=c0_position.Substring(c0_pz2-2,2);
- return c0_ret;
-}
+	function c0_D_what_at(c0_Zstr1:String):String
+	{
+		var c0_ret="";
+		var c0_pz2=c0_position.IndexOf( c0_Zstr1 );
+		if(c0_pz2>=0) c0_ret=c0_position.Substring(c0_pz2-2,2);
+		return c0_ret;
+	}
 
 
 //-------------------------------------------------
@@ -1649,93 +1649,95 @@ return c0_fs1;
 //----------------------------------
 function c0_set_FEN( c0_fen_str:String )
 {
-var c0_vert7=8;
-var c0_horz7=1;
+	var c0_vert7=8;
+	var c0_horz7=1;
+	
+	var c0_fs1="";
+	var c0_fs2="";
 
-var c0_fs1="";
-var c0_fs2="";
+	for(var c0_i7=0; c0_i7<c0_fen_str.length; c0_i7++)
+	{
+		var c0_ch7=c0_fen_str.Substring(c0_i7,1);
+		if( c0_ch7==" " ) break;
+		var c0_pusto=parseInt(c0_ch7);
+		if(c0_pusto>=1 && c0_pusto<=8)  { 
+			for(var c0_j7=1; c0_j7<=c0_pusto; c0_j7++) c0_fs1+="."; 
+		}
+		else c0_fs1+=c0_ch7;
+	}
+	c0_fs1+= (" " + c0_fen_str.Substring(c0_i7));
 
-for(var c0_i7=0; c0_i7<c0_fen_str.length; c0_i7++)
-{
-var c0_ch7=c0_fen_str.Substring(c0_i7,1);
-if( c0_ch7==" " ) break;
-var c0_pusto=parseInt(c0_ch7);
-if(c0_pusto>=1 && c0_pusto<=8)  { for(var c0_j7=1; c0_j7<=c0_pusto; c0_j7++) c0_fs1+="."; }
-else c0_fs1+=c0_ch7;
-}
-c0_fs1+= (" " + c0_fen_str.Substring(c0_i7));
+	for(c0_i7=0; c0_i7<c0_fs1.length; c0_i7++)
+	{
+		c0_ch7=c0_fs1.Substring(c0_i7,1);
+		if( c0_ch7==" " ) break;
+		
+		var c0_pos7 = fromCharCode(96+c0_horz7)+c0_vert7.ToString();
+		var c0_color7=" ";
+		if(c0_ch7=="p" || c0_ch7=="n" || c0_ch7=="b" || c0_ch7=="r" || c0_ch7=="q" || c0_ch7=="k" ) c0_color7="b";
+		if(c0_ch7=="P" || c0_ch7=="N" || c0_ch7=="B" || c0_ch7=="R" || c0_ch7=="Q" || c0_ch7=="K" ) c0_color7="w";
+		if(c0_color7!=" ")
+		{
+			 if( c0_ch7=="P" ||  c0_ch7=="p" ) c0_ch7="p";
+			 else c0_ch7=c0_ch7.ToUpper();
+			
+			 c0_fs2+=(c0_color7 + c0_ch7 + c0_pos7 + ";");
+		}
+		if(c0_ch7=="/") { if(c0_horz7>1) {c0_vert7--; c0_horz7=1;} }
+		else { c0_horz7++; if(c0_horz7>8) { c0_horz7=1; c0_vert7--; } }
+		
+		if(c0_vert7<1) break;
+	}
 
-for(c0_i7=0; c0_i7<c0_fs1.length; c0_i7++)
-{
-c0_ch7=c0_fs1.Substring(c0_i7,1);
-if( c0_ch7==" " ) break;
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
 
-var c0_pos7 = fromCharCode(96+c0_horz7)+c0_vert7.ToString();
-var c0_color7=" ";
-if(c0_ch7=="p" || c0_ch7=="n" || c0_ch7=="b" || c0_ch7=="r" || c0_ch7=="q" || c0_ch7=="k" ) c0_color7="b";
-if(c0_ch7=="P" || c0_ch7=="N" || c0_ch7=="B" || c0_ch7=="R" || c0_ch7=="Q" || c0_ch7=="K" ) c0_color7="w";
-if(c0_color7!=" ")
-	 {
-	 if( c0_ch7=="P" ||  c0_ch7=="p" ) c0_ch7="p";
-	 else c0_ch7=c0_ch7.ToUpper();
+	// which moves
+	var c0_side7move=1;
+	if(c0_i7<c0_fs1.length && c0_fs1.Substring(c0_i7,1)=="b") c0_side7move=-1;
 
-	 c0_fs2+=(c0_color7 + c0_ch7 + c0_pos7 + ";");
-	 }
-if(c0_ch7=="/") { if(c0_horz7>1) {c0_vert7--; c0_horz7=1;} }
-else { c0_horz7++; if(c0_horz7>8) { c0_horz7=1; c0_vert7--; } }
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
 
-if(c0_vert7<1) break;
-}
+	// castlings
+	
+	var c0_wK7=false; var c0_wRL7=false; var c0_wRR7=false; var c0_wcastl7=false;
+	var c0_bK7=false; var c0_bRL7=false; var c0_bRR7=false; var c0_bcastl7=false;
 
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
-
-// which moves
-var c0_side7move=1;
-if(c0_i7<c0_fs1.length && c0_fs1.Substring(c0_i7,1)=="b") c0_side7move=-1;
-
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
-
-// castlings
-
-var c0_wK7=false; var c0_wRL7=false; var c0_wRR7=false; var c0_wcastl7=false;
-var c0_bK7=false; var c0_bRL7=false; var c0_bRR7=false; var c0_bcastl7=false;
-
-var c0_q7="-";
-if(c0_i7<c0_fs1.length)
-{
- c0_q7=c0_fs1.Substring(c0_i7);
- var c0_at7=c0_q7.IndexOf(" ");
- if( c0_at7>=0 ) c0_q7=c0_q7.Substring(0,c0_at7);
-}
-if( c0_q7.IndexOf("K")<0 ) c0_wRR7=true;
-if( c0_q7.IndexOf("Q")<0 ) c0_wRL7=true;
-
-if( c0_q7.IndexOf("k")<0 ) c0_bRR7=true;
-if( c0_q7.IndexOf("q")<0 ) c0_bRL7=true;
-
-if( c0_q7.IndexOf("-")>=0 ) { c0_wK7=true;  c0_bK7=true; }
-
-c0_fisch_castl_save(c0_q7,c0_fs2);
-
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
-
-// en passant
-
-c0_q7="-";
-if(c0_i7<c0_fs1.length) c0_q7=c0_fs1.Substring(c0_i7,1);
-
-var c0_enpass7=0;
-if( c0_q7.IndexOf("-")<0 ) c0_enpass7=charCodeAt(c0_q7,0)-96;
-
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
-for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
-
-// remaining information is omitted
-
-c0_set_board_situation( c0_fs2, c0_wK7, c0_wRL7, c0_wRR7, c0_wcastl7, c0_bK7, c0_bRL7, c0_bRR7, c0_bcastl7, c0_enpass7, c0_moveslist, c0_side7move );
+	var c0_q7="-";
+	if(c0_i7<c0_fs1.length)
+	{
+		c0_q7=c0_fs1.Substring(c0_i7);
+		var c0_at7=c0_q7.IndexOf(" ");
+		if( c0_at7>=0 ) c0_q7=c0_q7.Substring(0,c0_at7);
+	}
+	if( c0_q7.IndexOf("K")<0 ) c0_wRR7=true;
+	if( c0_q7.IndexOf("Q")<0 ) c0_wRL7=true;
+	
+	if( c0_q7.IndexOf("k")<0 ) c0_bRR7=true;
+	if( c0_q7.IndexOf("q")<0 ) c0_bRL7=true;
+	
+	if( c0_q7.IndexOf("-")>=0 ) { c0_wK7=true;  c0_bK7=true; }
+	
+	c0_fisch_castl_save(c0_q7,c0_fs2);
+	
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
+	
+	// en passant
+	
+	c0_q7="-";
+	if(c0_i7<c0_fs1.length) c0_q7=c0_fs1.Substring(c0_i7,1);
+	
+	var c0_enpass7=0;
+	if( c0_q7.IndexOf("-")<0 ) c0_enpass7=charCodeAt(c0_q7,0)-96;
+	
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)==" " ) break;
+	for(; c0_i7<c0_fs1.length; c0_i7++) if( c0_fs1.Substring(c0_i7,1)!=" " ) break;
+	
+	// remaining information is omitted
+	
+	c0_set_board_situation( c0_fs2, c0_wK7, c0_wRL7, c0_wRR7, c0_wcastl7, c0_bK7, c0_bRL7, c0_bRR7, c0_bcastl7, c0_enpass7, c0_moveslist, c0_side7move );
 
 }
 

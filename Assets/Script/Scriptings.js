@@ -4,18 +4,15 @@ import c0_4unity_chess;
 // This is the main scripting part...
 var Name="Various javascripts";
 var FirstStart=true;
-var drawAnim=true;						// Animation /or fastest visual performance by redrawing...
+var drawAnim=false;						// Animation /or fastest visual performance by redrawing...
 
-//var setCamSide=false;
-var setCamTop=true;
-
-//var lightsValue=1;						// One lamp at the beginning...
+//var setCamSide=true;
 
 var toPromote=0;						// Promotion option (0-Q,1-R,2-B,3-N)...
 
-var CameraX=0;							// Camera can be horiz-scrolled...
-var CamXpre=0;
-var CamSidepre=1;
+						// Camera can be horiz-scrolled...
+//var CamXpre=0;
+//var CamSidepre=1;
 
 var drag1_at="";								// square with a piece dragged after the first drag...
 var drag1_animator:int=0;						// On drag start animation -counter
@@ -51,60 +48,67 @@ var useRybka=false;						// toggled by user if use...
 var StockfishAccessible=false;			// Script sets true on Rybka is accessible...
 var useStockfish=false;					// toggled by user if use...
 
+var english = true;
+var finnish=false;
+var irish=false;
+var koreanish=false;
 // GUI interface on screen...
+
+var lang_flag = 0; //default 0 English, 1 Irish, 2 Finnish, 3 Koreanish
+
+var menuArr = 
+	[
+		[ "English", "New Game", "Take Back", "Animation", "Top Camera", "Side Camera", "Brightness", "Promotion", "Pawn", "Rook", "Bishop", "Kngiht", "Queen"],
+		[ "Gaeilge", "Cluiche Nua", "Tóg ar Ais", "Beochan", "Ceamara Barr", "Ceamara Taobh", "Gile", "Uasghrádú", "Ceitheranach", "Caisléan", "Easpag", "Ridire", "Banríon"],
+		[ "Suomi", "Uusi Peli", "Kumoa", "Animaatiot", "Yläkamera", "Sivukamera", "Kirkkaus", "Korottuminen", "Sotilas", "Torni", "Lähetti", "Hevonen", "Kuningatar"],
+		[ "한국어", "새 게임", "한 수 무르기", "애니메이션", "위에서 보기", "옆에서 보기", "조명", "프로모션", "폰", "룩", "비숍", "나이트", "퀸"]
+	];
+	//String Array for Menu
+	
+var white="w";
+
+var black="b";
+var temp="";	
+function setMeOnly():boolean{
+	english = finnish = irish = koreanish = false;
+	return true;
+}
 
 function OnGUI () {
 
 	var e : Event = Event.current;
+	
+	GUI.Box (Rect (10, 25, 120, 40), message2show);
+	if(engineStatus==1) { engineStatus=2; }
+	
+	GUI.Box (Rect (10, 70, 120, 255), "");
+	if(GUI.Button (Rect (20, 160, 100, 30), "VS Computer"));
+	if(GUI.Button (Rect (20, 200, 100, 30), "VS Player"));
+	if(GUI.Button (Rect (20, 240, 100, 30), menuArr[lang_flag][2])) TakeBackFlag=true;
+	if(GUI.Button (Rect (20, 280, 100, 30), menuArr[lang_flag][1])) NewGameFlag=true;
+	
+	
+	GUI.Box (Rect (Screen.width - 130, 90-65, 120, 110), menuArr[lang_flag][7]);	//-65
+	GUI.Label (Rect (Screen.width - 90, 110-65, 90, 22), menuArr[lang_flag][12]);
+	GUI.Label (Rect (Screen.width - 90, 130-65, 90, 22), menuArr[lang_flag][9]);
+	GUI.Label (Rect (Screen.width - 90, 150-65, 90, 22), menuArr[lang_flag][10]);
+	GUI.Label (Rect (Screen.width - 90, 170-65, 90, 22), menuArr[lang_flag][11]);
+	toPromote = GUI.VerticalSlider (Rect (Screen.width - 110, 115-65, 80, 72), toPromote, 0, 3);
+	
 
-	if(message2show.length>0)		{
-		GUI.Box (Rect (10, 25, 120, 40), message2show);
-		if(engineStatus==1) { engineStatus=2; }
-		
-		GUI.Box (Rect (10, 70, 120, 255), "");
-
-		drawAnim = GUI.Toggle (Rect (20, 80, 130, 20), drawAnim, "Animation");
-		
-		setCamTop = GUI.Toggle (Rect (20, 115, 130, 20), setCamTop, "Top camera");
-		//setCamTop = GUI.Toggle (Rect (20, 135, 130, 20), setCamTop, "Side camera");
-		//CameraX = GUI.HorizontalSlider (Rect (20, 165, 100, 30), CameraX , -10, 10);
-		
-		//GUI.Label (Rect (30, 185, 130, 30), "Lamps");
-		//lightsValue = GUI.HorizontalSlider (Rect (20, 205, 100, 30), lightsValue, 0.0, 2);
-		
-		GUI.Box (Rect (Screen.width - 130, 90-65, 120, 110), "Promotion");	//-65
-		GUI.Label (Rect (Screen.width - 90, 110-65, 90, 22), "Queen");
-		GUI.Label (Rect (Screen.width - 90, 130-65, 90, 22), "Rook");
-		GUI.Label (Rect (Screen.width - 90, 150-65, 90, 22), "Bishop");
-		GUI.Label (Rect (Screen.width - 90, 170-65, 90, 22), "Knight");
-		toPromote = GUI.VerticalSlider (Rect (Screen.width - 110, 115-65, 80, 72), toPromote, 0, 3);
-		
-		if(GUI.Button (Rect (20, 200, 100, 30), "Language")) LanguageFlag=true;
-
-		if(GUI.Button (Rect (20, 240, 100, 30), "Take Back")) TakeBackFlag=true;
-		
-		if(GUI.Button (Rect (20, 280, 100, 30), "New Game")) NewGameFlag=true;
-		
-		GUI.Box (Rect (Screen.width - 130, 140, 120, 60), "Chess strength");
-		chess_strength = GUI.HorizontalSlider (Rect (Screen.width - 120, 170, 100, 30), chess_strength, 1, 6);
-		
-		if(jsJesterAccessible)			{
-			GUI.Box (Rect (Screen.width - 130, 205, 120, 30), "");
-			usejsJester = GUI.Toggle (Rect (Screen.width - 110, 210, 90, 20), usejsJester, "script-code");
-		}
-		if(CraftyAccessible)			{
-			GUI.Box (Rect (Screen.width - 130, 240, 120, 30), "");
-			useCrafty = GUI.Toggle (Rect (Screen.width - 110, 245, 90, 20), useCrafty, "Use Crafty");
-		}
-		if(RybkaAccessible)			{
-			GUI.Box (Rect (Screen.width - 130, 275, 120, 30), "");
-			useRybka = GUI.Toggle (Rect (Screen.width - 110, 280, 90, 20), useRybka, "or Rybka");
-		}	
-		if(StockfishAccessible)			{
-			GUI.Box (Rect (Screen.width - 130, 310, 120, 30), "");
-			useStockfish = GUI.Toggle (Rect (Screen.width - 110, 315, 90, 20), useStockfish, "or Stockfish");
-		}	
-	}
+	GUI.Box (Rect (Screen.width - 130, 270-65, 120, 110), "Language");
+	
+	english=GUI.Toggle (Rect (Screen.width - 100, 290-65, 90, 22), english, "English");
+	if(english == true) { english = setMeOnly(); lang_flag = 0;}
+	irish=GUI.Toggle (Rect (Screen.width - 100, 310-65, 90, 22), irish, "Irish");
+	if(irish == true) { irish = setMeOnly(); lang_flag = 1;}
+	finnish=GUI.Toggle (Rect (Screen.width - 100, 330-65, 90, 22), finnish, "Finnish");
+	if(finnish == true) { finnish = setMeOnly(); lang_flag = 2;}
+	koreanish=GUI.Toggle (Rect (Screen.width - 100, 350-65, 90, 22), koreanish, "Korean");
+	if(koreanish == true) { koreanish = setMeOnly(); lang_flag = 3;}
+	
+	GUI.Box (Rect (Screen.width - 130, 140, 120, 60), "Chess strength");
+	chess_strength = GUI.HorizontalSlider (Rect (Screen.width - 120, 170, 100, 30), chess_strength, 1, 6);
 }
 
 function Start ()	{
@@ -112,21 +116,21 @@ function Start ()	{
 	//(script 3d objects are just for scripting purposes, to hold chess programs and activate them frequently (frames per second)...
 //	GameObject.Find("Script1").renderer.enabled = false;			// ValiScriptObject
 	GameObject.Find("Script2").renderer.enabled = false;			// Scriptings
+	if(C0.c0_side>0) message2show ="WHITE TURN!";
+	else message2show ="BLACK TURN!";
 //	GameObject.Find("Script3").renderer.enabled = false;				// CraftyCall
 //	GameObject.Find("Script4").renderer.enabled = false;			// Ch_socket
 //	GameObject.Find("Script5").renderer.enabled = false;			// RybkaCall
 //	GameObject.Find("Script6").renderer.enabled = false;			// StockfischCall
 //	GameObject.Find("Script7").renderer.enabled = false;			// JsJester
 	
-	ActivateCamera(true);					// Initial - set side camera as main
-	//SetLamps(true);							// Initiol - set bright Light1
+	//ActivateCamera(true);					// Initial - set side camera as main
 }
 
 // frames per second run part...
 function Update ()	{
-	ActivateCamera(false);				// check for camera settings - if swap requested by user..
-	//SetLamps(false);						// check for lights slider settings...
-
+	//ActivateCamera(false);				// check for camera settings - if swap requested by user..
+	
 	if(FirstStart) {// could be right in Start(), anyway it's the same..., sometimes good to wait a bit while all the objects are being created...		
 		PlanesOnBoard();					// Planes needed for mouse drag... (a ray from camera to this rigibody object is catched)...
 		TransformVisualAllToH1();		// The board contains blank-pieces (to clone from) just on some squares. Moving all of them to h1... 
@@ -186,14 +190,14 @@ function Update ()	{
 	}
 	
 	DoPieceMovements();							// All the movements of pieces (constant frames per second for rigidbody x,y,z)...
-	DoEngineMovements();							// If chess engine should do a move...
+	//DoEngineMovements();							// If chess engine should do a move...
 	MouseMovement();								// Mouse movement events, suggest legal moves...
 	RollBackAction();									// If a takeback should be performed/ or new game started..
 
 	if(FirstStart)	{
 		position2board();					// Set current position on the board visually...
 		HideBlankPieces();				// Hide blank-pieces...
-		CreateActiveParticles();		// Active particles are just copies, to keep acurate position on screen...
+//		CreateActiveParticles();		// Active particles are just copies, to keep acurate position on screen...
 		FirstStart=false;
 	}
 	else	{
@@ -201,39 +205,27 @@ function Update ()	{
 	}
 }
 
-function ActivateCamera(first:boolean):void	{
-	//var c1=(GameObject.Find("CameraSide")).camera;
-	var c2=(GameObject.Find("CameraTop")).camera;
-	
-	c2.enabled=setCamTop;
-		
-	if(!(CamXpre==CameraX))	{
-		//GameObject.Find("CameraSide").transform.position.x += 1.5 * (CamXpre-CameraX);
-		GameObject.Find("CameraTop").transform.position.x += 0.1 * (CamXpre-CameraX);
-		CamXpre=CameraX;
-	}
-		
-//	if(!(C0.c0_side==CamSidepre))
-//		{
-//		CamSidepre=C0.c0_side;
-//		}
-}
+//function ActivateCamera(first:boolean):void	{
+//	var c1=(GameObject.Find("CameraSide")).camera;
+//	
+//	c1.enabled=setCamSide;
+//}
 
-function Revert_at(ats:String):String	{
+function Revert_at(ats:String):String	{	// ???? Don't know what it is.
 	var horiz=System.Convert.ToChar( System.Convert.ToInt32("a"[0]) + (System.Convert.ToInt32("h"[0]) - System.Convert.ToInt32(ats[0])) );
 	var vert=(9 - System.Convert.ToInt32( ats.Substring(1,1) ) ).ToString();
 	return horiz+vert;
 }
 
 function MouseMovement():void	{
-	var pObj = GameObject.Find("MoveParticle_active");
-	if((!drawAnim) || (drag1_at.length==0) || C0.c0_moving || ((mouse_at.length>0) && (!(drag1_at==mouse_at))))		{
-		if(!(pObj==null)) pObj.renderer.enabled=false;
+	//var pObj = GameObject.Find("MoveParticle_active");
+	if((drag1_at.length==0) || C0.c0_moving || ((mouse_at.length>0) && (!(drag1_at==mouse_at))))		{
+		//if(!(pObj==null)) pObj.renderer.enabled=false;
 		mouse_at="";
 	}
 	
 	if((drag1_at.length>0) && (!C0.c0_moving))		{
-			// We need to actually hit an object
+		// We need to actually hit an object
 		var hit : RaycastHit;
 		if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition),  hit, 1000)  && (!(hit.rigidbody==null)))	{
 			var at="";
@@ -243,24 +235,23 @@ function MouseMovement():void	{
 				var qObj=GameObject.Find(id);
 				if((!(qObj==null)) && (qObj.transform.position==hit.rigidbody.position)) at=id.Substring(6,2);
 			}	
-	
+			
 			if(at.length>0)		{
 				if(C0.c0_side<0) at=Revert_at(at);
 		
 				if((mouse_at.length==0) || (!(at==mouse_at)))	{
 					if(C0.c0_D_can_be_moved(drag1_at,at))	{
-						mouse_at=at;
-																				// Particle on legal movement...
-						pObj.transform.position = PiecePosition("MoveParticle",at);
-						if(drawAnim) pObj.renderer.enabled=true;
+						//mouse_at=at;
+						// Particle on legal movement...   Ehdrkfn
+						//pObj.transform.position = PiecePosition("MoveParticle",at);
+						//if(drawAnim) pObj.renderer.enabled=true;
 					}
 				}
 			}
-	
+			
 		}
 	}
 }
-
 
 function DragDetect():void
 {
@@ -271,7 +262,7 @@ function DragDetect():void
 	var hit : RaycastHit;
 	if (Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition),  hit, 1000) && (!(hit.rigidbody==null)))	{
 		if(!C0.c0_moving)	{	// If no piece is moving right now... (this animation algorithm is not good for the blitz-playing)
-			if(C0.c0_waitmove)		{	// If waiting for action only...
+			//if(C0.c0_waitmove)		{	// If waiting for action only...
 				var at="";
 				for(var h=0;h<8;h++)
 					for(var v=8;v>0;v--)	{
@@ -287,24 +278,15 @@ function DragDetect():void
 						if(!(q2Obj==null)) q2Obj.renderer.enabled=false;
 					}
 						
-					var gObj = GameObject.Find("DragParticle_active");
-					if((!drawAnim) || (drag1_at.length>0))  gObj.renderer.enabled=false;
+					//var gObj = GameObject.Find("DragParticle_active");
+					//if((!drawAnim) || (drag1_at.length>0))  gObj.renderer.enabled=false;
 						
 					var piecedrag=C0.c0_D_what_at(at);
-					if((piecedrag.length>0 && piecedrag.Substring(0,1)==((C0.c0_side>0)?"w":"b")))	{
+					if((piecedrag.length>0 && piecedrag.Substring(0,1)==((C0.c0_side>0)?white:black))) {
 						if(drag1_animator==0)	{		// If the previous animation is over...
 							drag1_at=at;
-							if(drawAnim) {
-								drag1_animator= GetTimeDelta(10,3);		// 3-seconds for animation...
-								
-																// Particle on drag....
-								gObj.transform.position = PiecePosition("DragParticle",at);
-								gObj.renderer.enabled=true;
-							}
-							else	{
-								var q3Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
-								if(!(q3Obj==null)) q3Obj.renderer.enabled=true;
-							}
+							var q3Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
+							if(!(q3Obj==null)) q3Obj.renderer.enabled=true;
 						}
 					}
 					else	{
@@ -314,17 +296,18 @@ function DragDetect():void
 						else if(toPromote==3) Piece2promote="N";
 						
 						C0.c0_become_from_engine=Piece2promote;
-							
 						if((drag1_at.length>0) && C0.c0_D_can_be_moved(drag1_at,at))	{
-							//if(playTcp)	{
-								//(GameObject.Find("Script4")).SendMessage("Movement",drag1_at + "-" + at + ((Piece2promote=="Q") ? "" : "="+Piece2promote));
-							//}
 							C0.c0_move_to(drag1_at,at);
 							C0.c0_sidemoves=-C0.c0_sidemoves;
+							temp=white;
+							white=black;
+							black=temp;
+							if(white=="w") message2show ="WHITE TURN!";
+							else message2show ="BLACK TURN!";
 						}
 					}
 				}
-			}
+			//}
 		}
 	}
 }
@@ -393,15 +376,15 @@ function HideBlankPieces():void	{
 	GameObject.Find("DragParticle").renderer.enabled=false;
 }
 
-function CreateActiveParticles():void	{
-	var p1Obj = GameObject.Find("MoveParticle");
-	var p2Obj = GameObject.Find("DragParticle");
-	
-	toObj1=Instantiate(p1Obj, p1Obj.transform.position, p1Obj.transform.rotation); 
-	toObj1.name="MoveParticle_active";
-	toObj2=Instantiate(p2Obj, p2Obj.transform.position, p2Obj.transform.rotation); 
-	toObj2.name="DragParticle_active";
-}
+//function CreateActiveParticles():void	{
+//	var p1Obj = GameObject.Find("MoveParticle");
+//	var p2Obj = GameObject.Find("DragParticle");
+//	
+//	toObj1=Instantiate(p1Obj, p1Obj.transform.position, p1Obj.transform.rotation); 
+//	toObj1.name="MoveParticle_active";
+//	toObj2=Instantiate(p2Obj, p2Obj.transform.position, p2Obj.transform.rotation); 
+//	toObj2.name="DragParticle_active";
+//}
 
 function CreatePiece(piece_color:String,piecetype:String,piece_at:String):void	{
 	var toObj : GameObject;
@@ -466,10 +449,10 @@ function piecelongtype(figure1:String,color1:String):String	{
 }
 
 function DoPieceMovements():void	{
-	if(drag1_animator>0)		{
-		GameObject.Find("piece_"+drag1_at).transform.position.y-=(5.5-drag1_animator)*0.06;
-		drag1_animator--;
-	}
+//	if(drag1_animator>0)		{
+//		GameObject.Find("piece_"+drag1_at).transform.position.y-=(5.5-drag1_animator)*0.06;
+//		drag1_animator--;
+//	}
 	if(C0.c0_moves2do.length>0)		{
 		if(move_animator>0)			{
 			var move_from=C0.c0_moves2do.Substring(0,2);
@@ -485,9 +468,9 @@ function DoPieceMovements():void	{
 
 			var mfrom=PiecePosition(piecetype,move_from);
 			var mto=PiecePosition(piecetype,move_to);
-						// piece moves constantly towards the square...
+			// piece moves constantly towards the square...
 			mObj.transform.position =  mfrom + ((mto - mfrom)/10 * (11-move_animator));
-						// a little jump for knight and castling rook...
+			// a little jump for knight and castling rook...
 			if((piecetype.IndexOf("knight")>=0)  || ((bc=="0") && (piecetype=="rook")))
 						mObj.transform.position.y+=(move_animator-(5-(move_animator>5?5:move_animator))+3)*0.2;
 	
@@ -508,7 +491,7 @@ function DoPieceMovements():void	{
 			if(move_animator==0)				{
 				mObj.name="piece_"+move_to;
 
-					// If a pawn becomes a better piece...
+				// If a pawn becomes a better piece...
 				if(("QRBN").IndexOf(bc)>=0)					{
 					Destroy (mObj);
 					CreatePiece(piececolor,piecelongtype(bc,piececolor),move_to); 		// promotion...
@@ -526,165 +509,172 @@ function DoPieceMovements():void	{
 }
 
 // this routine starts chess engine if needed...
-function DoEngineMovements():void	{
-	C0.c0_waitmove=(C0.c0_sidemoves==C0.c0_side);
-	
-	if((!gameover) && (engineStatus==0) && (move_animator<4))	{
-		if(C0.c0_D_is_check_to_king("w") || C0.c0_D_is_check_to_king("b"))			{
-			message2show = "Check+";
-			if( C0.c0_D_is_mate_to_king("w") ) { message2show = "Checkmate! 0:1"; gameover=true; }
-			if( C0.c0_D_is_mate_to_king("b") ) { message2show = "Checkmate! 1:0"; gameover=true; }
-		}
-		else			{
-			if(((C0.c0_sidemoves>0) && C0.c0_D_is_pate_to_king("w")) || ((C0.c0_sidemoves<0) && C0.c0_D_is_pate_to_king("b")))
-				{ message2show = "Stalemate, draw 1/2-1/2"; gameover=true; }
-		}
-	}
-	
-	if((!gameover) && (C0.c0_moves2do.length==0) && (engineStatus==0))		{
-		if(C0.c0_waitmove) message2show="Your move..."; 
-		else if(!(C0.c0_sidemoves==C0.c0_side))			{
-			//if(statusTcp==21)				{
-			//	message2show="Oponent's move";
-			//}
-			
-				message2show="Calculating...";
-				engineStatus=1;
-			
-		}
-	}
-	if(engineStatus==2)		{
-		// Request to other components can be sent via slow SendMessage function., Here it's good, not often.
-		if(usejsJester)			{
-		//	(GameObject.Find("Script7")).SendMessage("SetDeepLevel",chess_strength.ToString());
-		//	(GameObject.Find("Script7")).SendMessage("SetMovesList",C0.c0_moveslist);
-		}
-		else if(useCrafty)			{
-		//	(GameObject.Find("Script3")).SendMessage("SetDeepLevel",chess_strength.ToString());
-		//	(GameObject.Find("Script3")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-		}
-		else if(useRybka)			{
-		//	(GameObject.Find("Script5")).SendMessage("SetDeepLevel",chess_strength.ToString());
-		//	(GameObject.Find("Script5")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-		}
-		else if(useStockfish)			{
-		//	(GameObject.Find("Script6")).SendMessage("SetDeepLevel",chess_strength.ToString());
-		//	(GameObject.Find("Script6")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-		}
-		else			{
-		//	(GameObject.Find("Script1")).SendMessage("JSSetDeep",chess_strength.ToString());
-		//	(GameObject.Find("Script1")).SendMessage("JSRequest",C0.c0_get_FEN());
-		}
-		engineStatus=3;
-	}
-}
-
-	// this call receives answer from the chess engine... (from other object)
-function EngineAnswer(answer:String):void
-{
-var move="";
-if(answer.length>0)
-	{
-	if((answer.length>6) && (answer.Substring(0,7)=="Jester:"))
-		{
-		move=answer.Substring(8,4);
-		C0.c0_become_from_engine = ((answer.length<13)?"Q":(answer.Substring(13,1)).ToUpper());
-		if(move.length>0)
-			{
-			message2show = answer.Substring(0,10)+"-"+answer.Substring(10);
-			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-			C0.c0_sidemoves=-C0.c0_sidemoves;
-			}
-		}
-	else if((answer.length>6) && (answer.Substring(0,7)=="Crafty:"))
-		{
-		move=C0.c0_from_Crafty_standard(answer.Substring(8),(C0.c0_sidemoves>0?"w":"b"));
-		if(move.length>0)
-			{
-			C0.c0_become_from_engine = ((move.length>4)?move.Substring(5,1):"Q");
-			message2show = answer;
-			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-			C0.c0_sidemoves=-C0.c0_sidemoves;
-			}
-		}
-	else if((answer.length>5) && (answer.Substring(0,6)=="Rybka:"))
-		{
-		move=answer.Substring(7,4);
-		C0.c0_become_from_engine = ((answer.length<12)?"Q":(answer.Substring(11,1)).ToUpper());
-		if(move.length>0)
-			{
-			message2show = answer.Substring(0,9)+"-"+answer.Substring(9);
-			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-			C0.c0_sidemoves=-C0.c0_sidemoves;
-			}
-		}
-	else if((answer.length>9) && (answer.Substring(0,10)=="Stockfish:"))
-		{
-		move=answer.Substring(11,4);
-		C0.c0_become_from_engine = ((answer.length<16)?"Q":(answer.Substring(15,1)).ToUpper());
-		if(move.length>0)
-			{
-			message2show = answer.Substring(0,13)+"-"+answer.Substring(13);
-			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-			C0.c0_sidemoves=-C0.c0_sidemoves;
-			}
-		}
-	else
-		{
-		C0.c0_become_from_engine = ((answer.length>5)?answer.Substring(6,1):"Q");
-		if(C0.c0_D_can_be_moved(answer.Substring(0,2),answer.Substring(3,2)))
-			{
-			message2show="My move is " + answer;
-			C0.c0_move_to(answer.Substring(0,2),answer.Substring(3,2));
-			C0.c0_sidemoves=-C0.c0_sidemoves;
-			}
-		}
-	}
-engineStatus=0;
-}
+//function DoEngineMovements():void	{
+//	C0.c0_waitmove=(C0.c0_sidemoves==C0.c0_side);
+//	
+//	if((!gameover) && (engineStatus==0) && (move_animator<4))	{
+//		if(C0.c0_D_is_check_to_king("w") || C0.c0_D_is_check_to_king("b"))			{
+//			message2show = "Check+";
+//			if( C0.c0_D_is_mate_to_king("w") ) { message2show = "Checkmate! 0:1"; gameover=true; }
+//			if( C0.c0_D_is_mate_to_king("b") ) { message2show = "Checkmate! 1:0"; gameover=true; }
+//		}
+//		else			{
+//			if(((C0.c0_sidemoves>0) && C0.c0_D_is_pate_to_king("w")) || ((C0.c0_sidemoves<0) && C0.c0_D_is_pate_to_king("b")))
+//				{ message2show = "Stalemate, draw 1/2-1/2"; gameover=true; }
+//		}
+//	}
+//	
+//	if((!gameover) && (C0.c0_moves2do.length==0) && (engineStatus==0))		{
+//		if(C0.c0_waitmove) message2show="Your move..."; 
+//		else if(!(C0.c0_sidemoves==C0.c0_side))			{
+//			//if(statusTcp==21)				{
+//			//	message2show="Oponent's move";
+//			//}
+//			
+//				message2show="Calculating...";
+//				engineStatus=1;
+//			
+//		}
+//	}
+//	if(engineStatus==2)		{
+//		// Request to other components can be sent via slow SendMessage function., Here it's good, not often.
+//		if(usejsJester)			{
+//		//	(GameObject.Find("Script7")).SendMessage("SetDeepLevel",chess_strength.ToString());
+//		//	(GameObject.Find("Script7")).SendMessage("SetMovesList",C0.c0_moveslist);
+//		}
+//		else if(useCrafty)			{
+//		//	(GameObject.Find("Script3")).SendMessage("SetDeepLevel",chess_strength.ToString());
+//		//	(GameObject.Find("Script3")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
+//		}
+//		else if(useRybka)			{
+//		//	(GameObject.Find("Script5")).SendMessage("SetDeepLevel",chess_strength.ToString());
+//		//	(GameObject.Find("Script5")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
+//		}
+//		else if(useStockfish)			{
+//		//	(GameObject.Find("Script6")).SendMessage("SetDeepLevel",chess_strength.ToString());
+//		//	(GameObject.Find("Script6")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
+//		}
+//		else			{
+//		//	(GameObject.Find("Script1")).SendMessage("JSSetDeep",chess_strength.ToString());
+//		//	(GameObject.Find("Script1")).SendMessage("JSRequest",C0.c0_get_FEN());
+//		}
+//		engineStatus=3;
+//	}
+//}
+//
+//	// this call receives answer from the chess engine... (from other object)
+//function EngineAnswer(answer:String):void
+//{
+//var move="";
+//if(answer.length>0)
+//	{
+//	if((answer.length>6) && (answer.Substring(0,7)=="Jester:"))
+//		{
+//		move=answer.Substring(8,4);
+//		C0.c0_become_from_engine = ((answer.length<13)?"Q":(answer.Substring(13,1)).ToUpper());
+//		if(move.length>0)
+//			{
+//			message2show = answer.Substring(0,10)+"-"+answer.Substring(10);
+//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
+//			C0.c0_sidemoves=-C0.c0_sidemoves;
+//			}
+//		}
+//	else if((answer.length>6) && (answer.Substring(0,7)=="Crafty:"))
+//		{
+//		move=C0.c0_from_Crafty_standard(answer.Substring(8),(C0.c0_sidemoves>0?"w":"b"));
+//		if(move.length>0)
+//			{
+//			C0.c0_become_from_engine = ((move.length>4)?move.Substring(5,1):"Q");
+//			message2show = answer;
+//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
+//			C0.c0_sidemoves=-C0.c0_sidemoves;
+//			}
+//		}
+//	else if((answer.length>5) && (answer.Substring(0,6)=="Rybka:"))
+//		{
+//		move=answer.Substring(7,4);
+//		C0.c0_become_from_engine = ((answer.length<12)?"Q":(answer.Substring(11,1)).ToUpper());
+//		if(move.length>0)
+//			{
+//			message2show = answer.Substring(0,9)+"-"+answer.Substring(9);
+//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
+//			C0.c0_sidemoves=-C0.c0_sidemoves;
+//			}
+//		}
+//	else if((answer.length>9) && (answer.Substring(0,10)=="Stockfish:"))
+//		{
+//		move=answer.Substring(11,4);
+//		C0.c0_become_from_engine = ((answer.length<16)?"Q":(answer.Substring(15,1)).ToUpper());
+//		if(move.length>0)
+//			{
+//			message2show = answer.Substring(0,13)+"-"+answer.Substring(13);
+//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
+//			C0.c0_sidemoves=-C0.c0_sidemoves;
+//			}
+//		}
+//	else
+//		{
+//		C0.c0_become_from_engine = ((answer.length>5)?answer.Substring(6,1):"Q");
+//		if(C0.c0_D_can_be_moved(answer.Substring(0,2),answer.Substring(3,2)))
+//			{
+//			message2show="My move is " + answer;
+//			C0.c0_move_to(answer.Substring(0,2),answer.Substring(3,2));
+//			C0.c0_sidemoves=-C0.c0_sidemoves;
+//			}
+//		}
+//	}
+//engineStatus=0;
+//	}
 
 
 // Takeback and new game starting is like RollBack - one/all moves.
 function RollBackAction():void
 {
-if((TakeBackFlag || NewGameFlag) && (!C0.c0_moving) && (C0.c0_moves2do.length==0) &&
-			((C0.c0_sidemoves==C0.c0_side) || gameover) &&  (drag1_animator==0) && (move_animator==0))
+	if((TakeBackFlag || NewGameFlag) && (!C0.c0_moving) && (C0.c0_moves2do.length==0) )
+				//&&((C0.c0_sidemoves==C0.c0_side) || gameover) &&  (drag1_animator==0) && (move_animator==0))
 	{
-	if(gameover) gameover=false;
-	
-	for(var h=0;h<8;h++)
-		for(var v=8;v>0;v--)
+		if(gameover) gameover=false;
+		
+		for(var h=0;h<8;h++)
+			for(var v=8;v>0;v--)
+			{
+				var id="piece_"+System.Convert.ToChar(System.Convert.ToInt32("a"[0])+h)+v.ToString();		// Is this square mouse is over?
+				var qObj=GameObject.Find(id);
+				if(!(qObj==null)) Destroy(qObj);
+			}	
+		if(TakeBackFlag)
 		{
-		var id="piece_"+System.Convert.ToChar(System.Convert.ToInt32("a"[0])+h)+v.ToString();		// Is this square mouse is over?
-		var qObj=GameObject.Find(id);
-		if(!(qObj==null)) Destroy(qObj);
-		}	
-	if(TakeBackFlag)
-		{
-		C0.c0_take_back();
-		if(!(C0.c0_sidemoves==C0.c0_side)) C0.c0_take_back();
-		TakeBackFlag=false;
+			C0.c0_take_back();
+			temp=white;
+			white=black;
+			black=temp;
+			TakeBackFlag=false;
 		}
-	if(NewGameFlag)
+		if(NewGameFlag)
 		{
-		C0.c0_set_start_position("");
-		C0.c0_sidemoves=1;
-		C0.c0_waitmove=false;
-		C0.c0_side=-C0.c0_side;
-		C0.c0_waitmove=(C0.c0_side==C0.c0_sidemoves);
-		NewGameFlag=false;
+			if(C0.c0_side>0) message2show ="WHITE TURN!";
+			else message2show ="BLACK TURN!";
+			C0.c0_set_start_position("");
+			C0.c0_sidemoves=1;
+			C0.c0_waitmove=false;
+			white="w";
+			black="b";
+			temp="";
+			//C0.c0_side=-C0.c0_side;
+			//C0.c0_waitmove=(C0.c0_side!=C0.c0_sidemoves);
+			NewGameFlag=false;
 		}	
-	
-	position2board();					// Set current position on the board visually...
+		
+		position2board();					// Set current position on the board visually...
 	}
 }
 
 function GetTimeDelta(min_interval:int, secs:int):int		// To slow animation on fastest CPU
 {
-var dt= ((Time.deltaTime*min_interval)/secs).ToString();		// 3-seconds to move...
-var pt=dt.IndexOf("."); if(pt<0) pt=dt.IndexOf(".");
-var dt_int= System.Convert.ToInt32( ((pt<0)? dt : dt.Substring(0,pt)) );
-return Mathf.Max(min_interval,dt_int);
+	var dt= ((Time.deltaTime*min_interval)/secs).ToString();		// 3-seconds to move...
+	var pt=dt.IndexOf("."); if(pt<0) pt=dt.IndexOf(".");
+	var dt_int= System.Convert.ToInt32( ((pt<0)? dt : dt.Substring(0,pt)) );
+	return Mathf.Max(min_interval,dt_int);
 }
 
 function jsJesterAccess(status:String):void
