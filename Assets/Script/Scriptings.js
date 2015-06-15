@@ -6,13 +6,7 @@ var Name="Various javascripts";
 var FirstStart=true;
 var drawAnim=false;						// Animation /or fastest visual performance by redrawing...
 
-//var setCamSide=true;
-
 var toPromote=0;						// Promotion option (0-Q,1-R,2-B,3-N)...
-
-						// Camera can be horiz-scrolled...
-//var CamXpre=0;
-//var CamSidepre=1;
 
 var drag1_at="";								// square with a piece dragged after the first drag...
 var drag1_animator:int=0;						// On drag start animation -counter
@@ -32,29 +26,29 @@ var NewGameFlag=false;					// true on new game-button was pressed...
 
 var LanguageFlag=false;
 
-var chess_strength=1;						// Set strength of chess engine...
+var chess_strength=1;
+
+var mode=0;
+
+var setCamSide=true;
+var setCamSide2=false;
 
 public var C0:c0_4unity_chess = new c0_4unity_chess();
 
-var jsJesterAccessible=false;				// Script sets true on jsJester is accessible...
-var usejsJester=false;						// toggled by user if use...
-
-var CraftyAccessible=false;				// Script sets true on Crafty is accessible...
-var useCrafty=false;						// toggled by user if use...
-
-var RybkaAccessible=false;				// Script sets true on Rybka is accessible...
-var useRybka=false;						// toggled by user if use...
-
-var StockfishAccessible=false;			// Script sets true on Rybka is accessible...
-var useStockfish=false;					// toggled by user if use...
+var StockfishAccessible=false;			// Script sets true on Stockfish is accessible...
+var useStockfish=true;					// toggled by user if use...
 
 var english = true;
 var finnish=false;
 var irish=false;
 var koreanish=false;
 // GUI interface on screen...
-
 var lang_flag = 0; //default 0 English, 1 Irish, 2 Finnish, 3 Koreanish
+
+var promo2Queen = true;
+var promo2Rook = false;
+var promo2Bishop = false;
+var promo2Knight = false;
 
 var menuArr = 
 	[
@@ -66,161 +60,170 @@ var menuArr =
 	//String Array for Menu
 	
 var white="w";
-
 var black="b";
 var temp="";	
-function setMeOnly():boolean{
+
+var restart=false;
+var quit=false;
+var alert=false;
+var hide=false;
+	
+function setMeOnly():boolean{	//for mutllingual
 	english = finnish = irish = koreanish = false;
 	return true;
 }
 
-function OnGUI () {
+function setMeOnly2():boolean{	//for Promotions
+	promo2Queen = promo2Rook = promo2Bishop = promo2Knight = false;
+	return true;
+}
 
+function OnGUI () {
 	var e : Event = Event.current;
 	
-	GUI.Box (Rect (10, 25, 120, 40), message2show);
-	if(engineStatus==1) { engineStatus=2; }
-	
-	GUI.Box (Rect (10, 70, 120, 255), "");
-	if(GUI.Button (Rect (20, 160, 100, 30), "VS Computer"));
-	if(GUI.Button (Rect (20, 200, 100, 30), "VS Player"));
-	if(GUI.Button (Rect (20, 240, 100, 30), menuArr[lang_flag][2])) TakeBackFlag=true;
-	if(GUI.Button (Rect (20, 280, 100, 30), menuArr[lang_flag][1])) NewGameFlag=true;
-	
-	
-	GUI.Box (Rect (Screen.width - 130, 90-65, 120, 110), menuArr[lang_flag][7]);	//-65
-	GUI.Label (Rect (Screen.width - 90, 110-65, 90, 22), menuArr[lang_flag][12]);
-	GUI.Label (Rect (Screen.width - 90, 130-65, 90, 22), menuArr[lang_flag][9]);
-	GUI.Label (Rect (Screen.width - 90, 150-65, 90, 22), menuArr[lang_flag][10]);
-	GUI.Label (Rect (Screen.width - 90, 170-65, 90, 22), menuArr[lang_flag][11]);
-	toPromote = GUI.VerticalSlider (Rect (Screen.width - 110, 115-65, 80, 72), toPromote, 0, 3);
-	
+	if(FirstStart) {
+		GUI.Box (Rect ((Screen.width-120)/2, (Screen.height-90)/2, 120, 90), "");
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-90)/2 +10, 100, 30), "VS Computer")) {mode=1;} 
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-90)/2+50, 100, 30), "VS Player")) {mode=2;}
+	}
+	else {
+		GUI.Box (Rect (10, 25, 120, 40), message2show);
+		if(engineStatus==1) { engineStatus=2; }
+		
+		GUI.Box (Rect (10, 70, 120, 255), "");
+		if(GUI.Button (Rect (20, 80, 100, 30), menuArr[lang_flag][2])) TakeBackFlag=true;
+		if(GUI.Button (Rect (20, 120, 100, 30), menuArr[lang_flag][1])) NewGameFlag=true;
+		if(GUI.Button (Rect (20, 240, 100, 30), "Exit Game")) {quit=true;}
+		if(GUI.Button (Rect (20, 280, 100, 30), "Set Mode")) {restart=true;}
 
-	GUI.Box (Rect (Screen.width - 130, 270-65, 120, 110), "Language");
-	
-	english=GUI.Toggle (Rect (Screen.width - 100, 290-65, 90, 22), english, "English");
-	if(english == true) { english = setMeOnly(); lang_flag = 0;}
-	irish=GUI.Toggle (Rect (Screen.width - 100, 310-65, 90, 22), irish, "Irish");
-	if(irish == true) { irish = setMeOnly(); lang_flag = 1;}
-	finnish=GUI.Toggle (Rect (Screen.width - 100, 330-65, 90, 22), finnish, "Finnish");
-	if(finnish == true) { finnish = setMeOnly(); lang_flag = 2;}
-	koreanish=GUI.Toggle (Rect (Screen.width - 100, 350-65, 90, 22), koreanish, "Korean");
-	if(koreanish == true) { koreanish = setMeOnly(); lang_flag = 3;}
-	
-	GUI.Box (Rect (Screen.width - 130, 140, 120, 60), "Chess strength");
-	chess_strength = GUI.HorizontalSlider (Rect (Screen.width - 120, 170, 100, 30), chess_strength, 1, 6);
+		//GUI.Box (Rect (Screen.width - 130, 90-65, 120, 110), menuArr[lang_flag][7]);	//-65
+		//GUI.Label (Rect (Screen.width - 90, 110-65, 90, 22), menuArr[lang_flag][12]);
+		//GUI.Label (Rect (Screen.width - 90, 130-65, 90, 22), menuArr[lang_flag][9]);
+		//GUI.Label (Rect (Screen.width - 90, 150-65, 90, 22), menuArr[lang_flag][10]);
+		//GUI.Label (Rect (Screen.width - 90, 170-65, 90, 22), menuArr[lang_flag][11]);
+		//toPromote = GUI.VerticalSlider (Rect (Screen.width - 110, 115-65, 80, 72), toPromote, 0, 3);
+		
+		GUI.Box (Rect (Screen.width - 130, 90-65, 120, 110),  menuArr[lang_flag][7]);
+		promo2Queen = GUI.Toggle (Rect (Screen.width - 90, 110-65, 90, 22), promo2Queen, menuArr[lang_flag][12]);
+		if(promo2Queen == true) { promo2Queen = setMeOnly2(); toPromote = 0;}
+		promo2Rook = GUI.Toggle (Rect (Screen.width - 90, 130-65, 90, 22), promo2Rook, menuArr[lang_flag][9]);
+		if(promo2Rook == true) { promo2Rook = setMeOnly2(); toPromote = 1;}
+		promo2Bishop = GUI.Toggle (Rect (Screen.width - 90, 150-65, 90, 22), promo2Bishop, menuArr[lang_flag][10]);
+		if(promo2Bishop == true) { promo2Bishop = setMeOnly2(); toPromote = 2;}
+		promo2Knight = GUI.Toggle (Rect (Screen.width - 90, 170-65, 90, 22), promo2Knight, menuArr[lang_flag][11]);
+		if(promo2Knight == true) { promo2Knight = setMeOnly2(); toPromote = 3;}
+		
+		GUI.Box (Rect (Screen.width - 130, 270-65, 120, 100), "Language");
+		english=GUI.Toggle (Rect (Screen.width - 100, 290-65, 90, 22), english, "English");
+		if(english == true) { english = setMeOnly(); lang_flag = 0;}
+		irish=GUI.Toggle (Rect (Screen.width - 100, 310-65, 90, 22), irish, "Irish");
+		if(irish == true) { irish = setMeOnly(); lang_flag = 1;}
+		finnish=GUI.Toggle (Rect (Screen.width - 100, 330-65, 90, 22), finnish, "Finnish");
+		if(finnish == true) { finnish = setMeOnly(); lang_flag = 2;}
+		koreanish=GUI.Toggle (Rect (Screen.width - 100, 350-65, 90, 22), koreanish, "Korean");
+		if(koreanish == true) { koreanish = setMeOnly(); lang_flag = 3;}
+		
+		
+		if(mode==1) {
+			GUI.Box (Rect (Screen.width - 130, 140, 120, 60), "Chess strength");
+			if(GUI.Button (Rect (Screen.width - 135, 160, 65, 20), "Easy")) {chess_strength=1;}
+			if(GUI.Button (Rect (Screen.width - 70, 160, 65, 20), "Normal")) {chess_strength=2;}
+			if(GUI.Button (Rect (Screen.width - 135, 180, 65, 20), "Hard")) {chess_strength=3;}
+			if(GUI.Button (Rect (Screen.width - 70, 180, 65, 20), "Extreme")) {chess_strength=5;}
+		}
+	}
+	if(alert&&hide) {
+		GUI.Box (Rect ((Screen.width-120)/2, (Screen.height-60)/2, 120, 60), "Check!!!"); 
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-60)/2+25, 100, 30), "OK")) {hide=false;}
+	}
+	if(gameover) {
+		GUI.Box (Rect ((Screen.width-120)/2, (Screen.height-155)/2, 120, 155), "");
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-155)/2+10, 100, 30), menuArr[lang_flag][1])) {NewGameFlag=true;}
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-155)/2+80, 100, 30), "Set Mode")) {restart=true;}
+		if(GUI.Button (Rect ((Screen.width-100)/2, (Screen.height-155)/2+115, 100, 30), "Exit Game")) {quit=true;}
+	}
 }
 
 function Start ()	{
 	// Hide objects that are not visually needed... 
 	//(script 3d objects are just for scripting purposes, to hold chess programs and activate them frequently (frames per second)...
-//	GameObject.Find("Script1").renderer.enabled = false;			// ValiScriptObject
 	GameObject.Find("Script2").renderer.enabled = false;			// Scriptings
 	if(C0.c0_side>0) message2show ="WHITE TURN!";
 	else message2show ="BLACK TURN!";
-//	GameObject.Find("Script3").renderer.enabled = false;				// CraftyCall
-//	GameObject.Find("Script4").renderer.enabled = false;			// Ch_socket
-//	GameObject.Find("Script5").renderer.enabled = false;			// RybkaCall
-//	GameObject.Find("Script6").renderer.enabled = false;			// StockfischCall
-//	GameObject.Find("Script7").renderer.enabled = false;			// JsJester
-	
-	//ActivateCamera(true);					// Initial - set side camera as main
+	GameObject.Find("Script6").renderer.enabled = false;			// StockfischCall
+	ActivateCamera(true);
 }
 
 // frames per second run part...
 function Update ()	{
-	//ActivateCamera(false);				// check for camera settings - if swap requested by user..
-	
+	if (restart) {  
+    	Application.LoadLevel (0);  
+  	}  
+  	if (quit) {
+		Application.Quit();
+	}
+	if(!C0.c0_moving)	ActivateCamera(false);
 	if(FirstStart) {// could be right in Start(), anyway it's the same..., sometimes good to wait a bit while all the objects are being created...		
-		PlanesOnBoard();					// Planes needed for mouse drag... (a ray from camera to this rigibody object is catched)...
-		TransformVisualAllToH1();		// The board contains blank-pieces (to clone from) just on some squares. Moving all of them to h1... 
-	
-		//1.FEN startup test (ok):	
-		//C0.c0_start_FEN="8/p3r1k1/6p1/3P2Bp/p4N1P/p5P1/5PK1/8 w - - 0 1";
-		//C0.c0_set_start_position("");
-		//print(C0.c0_get_FEN());
-			
-		//C0.c0_start_FEN="7k/Q7/2P2K2/8/8/8/8/8 w - - 0 70";		// a checkmate position just for tests...
-	
-		C0.c0_side=1;							// This side is white.   For black set -1
-		C0.c0_waitmove=true;					// Waiting for mouse drag...
-		C0.c0_set_start_position("");		// Set the initial position... 
+		if(mode==1 || mode==2) {
+			PlanesOnBoard();					// Planes needed for mouse drag... (a ray from camera to this rigibody object is catched)...
+			TransformVisualAllToH1();		// The board contains blank-pieces (to clone from) just on some squares. Moving all of them to h1... 
 		
-		//2.PGN functions test (ok):
-		//PGN0="1.d4 d5 2.c4 e6 3.Nf3 Nf6 4.g3 Be7 5.Bg2 0-0 6.0-0 dxc4 7.Qc2 a6 8.Qxc4 b5 9.Qc2 Bb7 10.Bd2 Be4 11.Qc1 Bb7 12.Qc2 Ra7 13.Rc1 Be4 14.Qb3 Bd5 15.Qe3 Nbd7 16.Ba5 Bd6 17.Nc3 Bb7 18.Ng5 Bxg2 19.Kxg2 Qa8+ 20.Qf3 Qxf3+ 21.Kxf3 e5 22.e3 Be7 23.Ne2 Re8 24.Kg2 Nd5 25.Nf3 Bd6 26.dxe5 Nxe5 27.Nxe5 Rxe5 28.Nd4 Ra8 29.Nc6 Re6 30.Rc2 Nb6 31.b3 Kf8 32.Rd1 Ke8 33.Nd4 Rf6 34.e4 Rg6 35.e5 Be7 36.Rxc7 Nd5 37.Rb7 Bd8 38.Nf5 Nf4+ 39.Kf3 Bxa5 40.gxf4 Bb4 41.Rdd7 Rc8 42.Rxf7 Rc3+ 43.Ke4 1-0";
-		//var mlist= C0.c0_get_moves_from_PGN(PGN0); print(mlist);
-		//var PGN1=C0.c0_put_to_PGN(mlist); print(PGN1);
+			//1.FEN startup test (ok):	
+			//C0.c0_start_FEN="8/p3r1k1/6p1/3P2Bp/p4N1P/p5P1/5PK1/8 w - - 0 1";
+			//C0.c0_set_start_position("");
+			//print(C0.c0_get_FEN());
+				
+			//C0.c0_start_FEN="7k/Q7/2P2K2/8/8/8/8/8 w - - 0 70";		// a checkmate position just for tests...
 		
-		//3.Fischerrandom support test (ok):
-		//var PGN0="[White Aronian, Levon][Black Rosa, Mike][Result 0:1][SetUp 1][FEN bbrkqnrn/pppppppp/8/8/8/8/PPPPPPPP/BBRKQNRN w GCgc - 0 0] 1. c4 e5 2. Nhg3 Nhg6 3. b3 f6 4. e3 b6 5. Qe2 Ne6 6. Qh5 Rh8 7. Nf5 Ne7 8. Qxe8+ Kxe8 9. N1g3 h5 10. Nxe7 Kxe7 11. d4 d6 12. h4 Kf7 13. d5 Nf8 14. f4 c6 15. fxe5 dxe5 16. e4 Bd6 17. Bd3 Ng6 18. O-O Nxh4 19. Be2 Ng6 20. Nf5 Bc5+ 21. Kh2 Nf4 22. Rc2 cxd5 23. exd5 h4 24. Bg4 Rce8 25. Bb2 g6 26. Nd4 exd4 27.Rxf4 Bd6 0-1";
-		//var mlist= C0.c0_get_moves_from_PGN(PGN0); print(mlist);
-		//var PGN1=C0.c0_put_to_PGN(mlist); print(PGN1);
-		
-		//4.Other functions, and, of course, access variables directly C0.<variable>=...
-		//C0.c0_position=...  -position of pieces on board...
-		//C0.c0_moveslist=... -moveslist is the list of moves made on board currently...
-		
-		// Make a first move e4...
-		//C0.c0_set_start_position("");
-		//C0.c0_move_to("e2","e4");
-		
-		// Show the last move made...
-		//print(C0.c0_D_last_move_was());
-		// And take it back...
-		//C0.c0_take_back();
-		
-			// To see possible movements...
-		//print(C0.c0_get_next_moves());
-		
-		//Other functions:
-		//Is e2-e4 a legal move in current position...
-		//print(C0.c0_D_can_be_moved("a2","a4"));
-		//Is there stalemate to the white king right now? ("b"/"w"- the parameter)
-		//print(C0.c0_D_is_pate_to_king("w"));
-		//Is there check to the white king right now? 
-		//print(C0.c0_D_is_check_to_king("w"));
-		//Is there checkmate to the white king right now? 
-		//print(C0.c0_D_is_mate_to_king("w"));
-		
-		// What a piece on the square g7?
-		//print(C0.c0_D_what_at("g7"));
-		// Is the square g6 empty? (no piece on it)
-		//print(C0.c0_D_is_empty("g6"));
-	
+			C0.c0_side=1;							// This side is white.   For black set -1
+			C0.c0_waitmove=true;					// Waiting for mouse drag...
+			C0.c0_set_start_position("");		// Set the initial position... 
+		}	
 	}
 	
 	DoPieceMovements();							// All the movements of pieces (constant frames per second for rigidbody x,y,z)...
-	//DoEngineMovements();							// If chess engine should do a move...
+	if(mode==1) DoEngineMovements();							// If chess engine should do a move...
+	else if(mode==2) checkGameover();
 	MouseMovement();								// Mouse movement events, suggest legal moves...
 	RollBackAction();									// If a takeback should be performed/ or new game started..
 
 	if(FirstStart)	{
 		position2board();					// Set current position on the board visually...
-		HideBlankPieces();				// Hide blank-pieces...
-//		CreateActiveParticles();		// Active particles are just copies, to keep acurate position on screen...
-		FirstStart=false;
+		HideBlankPieces();					// Hide blank-pieces...
+		if(mode==1 || mode==2) {
+			FirstStart=false;
+		}
 	}
 	else	{
 		DragDetect();						// If mouse pressed on any square...
 	}
 }
 
-//function ActivateCamera(first:boolean):void	{
-//	var c1=(GameObject.Find("CameraSide")).camera;
-//	
-//	c1.enabled=setCamSide;
-//}
+function ActivateCamera(first:boolean):void
+{
+	var c1=(GameObject.Find("CameraSide")).camera;
+	var c2=(GameObject.Find("CameraSide2")).camera;
+	
+	if(first)	{
+	   c1.enabled=setCamSide;
+	   c2.enabled=setCamSide2;
+    }
+	else	{
+	   if(mode == 2)	{
+	      if((!c1.enabled) && setCamSide && white == "w") { setCamSide2=false; c1.enabled=true; c2.enabled=false; }
+	      if((!c2.enabled) && setCamSide2 && white != "w") { setCamSide=false; c2.enabled=true; c1.enabled=false; }
+       }
+    }
+}
 
-function Revert_at(ats:String):String	{	// ???? Don't know what it is.
+function Revert_at(ats:String):String	{	
 	var horiz=System.Convert.ToChar( System.Convert.ToInt32("a"[0]) + (System.Convert.ToInt32("h"[0]) - System.Convert.ToInt32(ats[0])) );
 	var vert=(9 - System.Convert.ToInt32( ats.Substring(1,1) ) ).ToString();
 	return horiz+vert;
 }
 
 function MouseMovement():void	{
-	//var pObj = GameObject.Find("MoveParticle_active");
 	if((drag1_at.length==0) || C0.c0_moving || ((mouse_at.length>0) && (!(drag1_at==mouse_at))))		{
-		//if(!(pObj==null)) pObj.renderer.enabled=false;
 		mouse_at="";
 	}
 	
@@ -238,23 +241,16 @@ function MouseMovement():void	{
 			
 			if(at.length>0)		{
 				if(C0.c0_side<0) at=Revert_at(at);
-		
-				if((mouse_at.length==0) || (!(at==mouse_at)))	{
-					if(C0.c0_D_can_be_moved(drag1_at,at))	{
-						//mouse_at=at;
-						// Particle on legal movement...   Ehdrkfn
-						//pObj.transform.position = PiecePosition("MoveParticle",at);
-						//if(drawAnim) pObj.renderer.enabled=true;
-					}
-				}
 			}
-			
 		}
 	}
 }
 
 function DragDetect():void
 {
+	var q2Obj;
+	var q3Obj;
+	var Piece2promote;
 	// Make sure the user pressed the mouse down
 	if (!Input.GetMouseButtonDown (0)) return;
 
@@ -262,7 +258,7 @@ function DragDetect():void
 	var hit : RaycastHit;
 	if (Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition),  hit, 1000) && (!(hit.rigidbody==null)))	{
 		if(!C0.c0_moving)	{	// If no piece is moving right now... (this animation algorithm is not good for the blitz-playing)
-			//if(C0.c0_waitmove)		{	// If waiting for action only...
+			if(C0.c0_waitmove)		{	// If waiting for action only...
 				var at="";
 				for(var h=0;h<8;h++)
 					for(var v=8;v>0;v--)	{
@@ -274,40 +270,75 @@ function DragDetect():void
 				if(at.length>0)		{
 					if(C0.c0_side<0) at=Revert_at(at);
 					if(drag1_at.length>0)	{
-						var q2Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
+						q2Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
 						if(!(q2Obj==null)) q2Obj.renderer.enabled=false;
 					}
 						
-					//var gObj = GameObject.Find("DragParticle_active");
-					//if((!drawAnim) || (drag1_at.length>0))  gObj.renderer.enabled=false;
-						
 					var piecedrag=C0.c0_D_what_at(at);
-					if((piecedrag.length>0 && piecedrag.Substring(0,1)==((C0.c0_side>0)?white:black))) {
-						if(drag1_animator==0)	{		// If the previous animation is over...
-							drag1_at=at;
-							var q3Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
-							if(!(q3Obj==null)) q3Obj.renderer.enabled=true;
+					
+					if(mode==2) {
+						if((piecedrag.length>0 && piecedrag.Substring(0,1)==((C0.c0_side>0)?white:black))) {   // <- player vs player: white:black
+							if(drag1_animator==0)	{		// If the previous animation is over...			   	   // <- 		AI		 : black:white
+								drag1_at=at;
+								q3Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
+								if(!(q3Obj==null)) q3Obj.renderer.enabled=true;
+							}
+						}
+						else	{
+							Piece2promote="Q";
+							if(toPromote==1) Piece2promote="R";
+							else if(toPromote==2) Piece2promote="B";
+							else if(toPromote==3) Piece2promote="N";
+							
+							C0.c0_become_from_engine=Piece2promote;
+							if((drag1_at.length>0) && C0.c0_D_can_be_moved(drag1_at,at))	{
+								C0.c0_move_to(drag1_at,at);
+								C0.c0_sidemoves=-C0.c0_sidemoves;
+								temp=white;
+								white=black;
+								black=temp;
+								
+								hide=true;
+								alert=false;
+								if(white=="w") {
+									message2show ="WHITE TURN!";
+									setCamSide=true;
+									setCamSide2=false;
+								}
+								else {
+									message2show ="BLACK TURN!";
+									setCamSide=false;
+									setCamSide2=true;
+								}
+							}
 						}
 					}
-					else	{
-						var Piece2promote="Q";
-						if(toPromote==1) Piece2promote="R";
-						else if(toPromote==2) Piece2promote="B";
-						else if(toPromote==3) Piece2promote="N";
-						
-						C0.c0_become_from_engine=Piece2promote;
-						if((drag1_at.length>0) && C0.c0_D_can_be_moved(drag1_at,at))	{
-							C0.c0_move_to(drag1_at,at);
-							C0.c0_sidemoves=-C0.c0_sidemoves;
-							temp=white;
-							white=black;
-							black=temp;
-							if(white=="w") message2show ="WHITE TURN!";
-							else message2show ="BLACK TURN!";
+					else if(mode==1) {
+						if((piecedrag.length>0 && piecedrag.Substring(0,1)==((C0.c0_side>0)?"w":"b"))) {
+							if(drag1_animator==0)	{		// If the previous animation is over...
+								drag1_at=at;
+								q3Obj=GameObject.Find("plane_"+((C0.c0_side<0)?Revert_at(drag1_at):drag1_at) );
+								if(!(q3Obj==null)) q3Obj.renderer.enabled=true;
+							}
+						}
+						else	{
+							Piece2promote="Q";
+							if(toPromote==1) Piece2promote="R";
+							else if(toPromote==2) Piece2promote="B";
+							else if(toPromote==3) Piece2promote="N";
+							
+							C0.c0_become_from_engine=Piece2promote;
+							
+							if((drag1_at.length>0) && C0.c0_D_can_be_moved(drag1_at,at))	{
+								C0.c0_move_to(drag1_at,at);
+								C0.c0_sidemoves=-C0.c0_sidemoves;
+								hide=true;
+								alert=false;
+							}
 						}
 					}
 				}
-			//}
+			}
 		}
 	}
 }
@@ -376,16 +407,6 @@ function HideBlankPieces():void	{
 	GameObject.Find("DragParticle").renderer.enabled=false;
 }
 
-//function CreateActiveParticles():void	{
-//	var p1Obj = GameObject.Find("MoveParticle");
-//	var p2Obj = GameObject.Find("DragParticle");
-//	
-//	toObj1=Instantiate(p1Obj, p1Obj.transform.position, p1Obj.transform.rotation); 
-//	toObj1.name="MoveParticle_active";
-//	toObj2=Instantiate(p2Obj, p2Obj.transform.position, p2Obj.transform.rotation); 
-//	toObj2.name="DragParticle_active";
-//}
-
 function CreatePiece(piece_color:String,piecetype:String,piece_at:String):void	{
 	var toObj : GameObject;
 	var fromObj = GameObject.Find("chessboard_min2/"+piecetype);
@@ -449,10 +470,6 @@ function piecelongtype(figure1:String,color1:String):String	{
 }
 
 function DoPieceMovements():void	{
-//	if(drag1_animator>0)		{
-//		GameObject.Find("piece_"+drag1_at).transform.position.y-=(5.5-drag1_animator)*0.06;
-//		drag1_animator--;
-//	}
 	if(C0.c0_moves2do.length>0)		{
 		if(move_animator>0)			{
 			var move_from=C0.c0_moves2do.Substring(0,2);
@@ -469,6 +486,7 @@ function DoPieceMovements():void	{
 			var mfrom=PiecePosition(piecetype,move_from);
 			var mto=PiecePosition(piecetype,move_to);
 			// piece moves constantly towards the square...
+
 			mObj.transform.position =  mfrom + ((mto - mfrom)/10 * (11-move_animator));
 			// a little jump for knight and castling rook...
 			if((piecetype.IndexOf("knight")>=0)  || ((bc=="0") && (piecetype=="rook")))
@@ -501,130 +519,88 @@ function DoPieceMovements():void	{
 				if(C0.c0_moves2do.length==0) C0.c0_moving=false;
 			}
 		}
-		else			{
+		else	{
 			move_animator=(drawAnim ? GetTimeDelta(10,4): 1);					// 4 seconds animation anyway...
 			drag1_animator=0;
 		}
 	}
 }
 
+// check gameover...
+function checkGameover():void	{
+	if((!gameover) && (engineStatus==0) && (move_animator<4))	{
+		if(C0.c0_D_is_check_to_king("w") || C0.c0_D_is_check_to_king("b"))			{
+			message2show = "Check+";
+			alert=true;
+			if( C0.c0_D_is_mate_to_king("w") ) {alert=false; message2show = "Checkmate!!!\n Black Win!!!"; gameover=true; }
+			if( C0.c0_D_is_mate_to_king("b") ) {alert=false; message2show = "Checkmate!!!\n White Win!!!"; gameover=true; }
+		}
+		else			{
+			if(((C0.c0_sidemoves>0) && C0.c0_D_is_pate_to_king("w")) || ((C0.c0_sidemoves<0) && C0.c0_D_is_pate_to_king("b")))
+				{ message2show = "Draw!!!"; gameover=true; }
+		}
+	}
+	
+	if(mode==1) {
+		if((!gameover) && (C0.c0_moves2do.length==0) && (engineStatus==0))		{
+			if(C0.c0_waitmove) {
+				if(mode==1) message2show="Your move..."; 
+			}
+			else if(!(C0.c0_sidemoves==C0.c0_side))			{			
+					message2show="Calculating...";
+					engineStatus=1;
+			}
+		}
+	}
+}
+
 // this routine starts chess engine if needed...
-//function DoEngineMovements():void	{
-//	C0.c0_waitmove=(C0.c0_sidemoves==C0.c0_side);
-//	
-//	if((!gameover) && (engineStatus==0) && (move_animator<4))	{
-//		if(C0.c0_D_is_check_to_king("w") || C0.c0_D_is_check_to_king("b"))			{
-//			message2show = "Check+";
-//			if( C0.c0_D_is_mate_to_king("w") ) { message2show = "Checkmate! 0:1"; gameover=true; }
-//			if( C0.c0_D_is_mate_to_king("b") ) { message2show = "Checkmate! 1:0"; gameover=true; }
-//		}
-//		else			{
-//			if(((C0.c0_sidemoves>0) && C0.c0_D_is_pate_to_king("w")) || ((C0.c0_sidemoves<0) && C0.c0_D_is_pate_to_king("b")))
-//				{ message2show = "Stalemate, draw 1/2-1/2"; gameover=true; }
-//		}
-//	}
-//	
-//	if((!gameover) && (C0.c0_moves2do.length==0) && (engineStatus==0))		{
-//		if(C0.c0_waitmove) message2show="Your move..."; 
-//		else if(!(C0.c0_sidemoves==C0.c0_side))			{
-//			//if(statusTcp==21)				{
-//			//	message2show="Oponent's move";
-//			//}
-//			
-//				message2show="Calculating...";
-//				engineStatus=1;
-//			
-//		}
-//	}
-//	if(engineStatus==2)		{
-//		// Request to other components can be sent via slow SendMessage function., Here it's good, not often.
-//		if(usejsJester)			{
-//		//	(GameObject.Find("Script7")).SendMessage("SetDeepLevel",chess_strength.ToString());
-//		//	(GameObject.Find("Script7")).SendMessage("SetMovesList",C0.c0_moveslist);
-//		}
-//		else if(useCrafty)			{
-//		//	(GameObject.Find("Script3")).SendMessage("SetDeepLevel",chess_strength.ToString());
-//		//	(GameObject.Find("Script3")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-//		}
-//		else if(useRybka)			{
-//		//	(GameObject.Find("Script5")).SendMessage("SetDeepLevel",chess_strength.ToString());
-//		//	(GameObject.Find("Script5")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-//		}
-//		else if(useStockfish)			{
-//		//	(GameObject.Find("Script6")).SendMessage("SetDeepLevel",chess_strength.ToString());
-//		//	(GameObject.Find("Script6")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
-//		}
-//		else			{
-//		//	(GameObject.Find("Script1")).SendMessage("JSSetDeep",chess_strength.ToString());
-//		//	(GameObject.Find("Script1")).SendMessage("JSRequest",C0.c0_get_FEN());
-//		}
-//		engineStatus=3;
-//	}
-//}
-//
-//	// this call receives answer from the chess engine... (from other object)
-//function EngineAnswer(answer:String):void
-//{
-//var move="";
-//if(answer.length>0)
-//	{
-//	if((answer.length>6) && (answer.Substring(0,7)=="Jester:"))
-//		{
-//		move=answer.Substring(8,4);
-//		C0.c0_become_from_engine = ((answer.length<13)?"Q":(answer.Substring(13,1)).ToUpper());
-//		if(move.length>0)
-//			{
-//			message2show = answer.Substring(0,10)+"-"+answer.Substring(10);
-//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-//			C0.c0_sidemoves=-C0.c0_sidemoves;
-//			}
-//		}
-//	else if((answer.length>6) && (answer.Substring(0,7)=="Crafty:"))
-//		{
-//		move=C0.c0_from_Crafty_standard(answer.Substring(8),(C0.c0_sidemoves>0?"w":"b"));
-//		if(move.length>0)
-//			{
-//			C0.c0_become_from_engine = ((move.length>4)?move.Substring(5,1):"Q");
-//			message2show = answer;
-//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-//			C0.c0_sidemoves=-C0.c0_sidemoves;
-//			}
-//		}
-//	else if((answer.length>5) && (answer.Substring(0,6)=="Rybka:"))
-//		{
-//		move=answer.Substring(7,4);
-//		C0.c0_become_from_engine = ((answer.length<12)?"Q":(answer.Substring(11,1)).ToUpper());
-//		if(move.length>0)
-//			{
-//			message2show = answer.Substring(0,9)+"-"+answer.Substring(9);
-//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-//			C0.c0_sidemoves=-C0.c0_sidemoves;
-//			}
-//		}
-//	else if((answer.length>9) && (answer.Substring(0,10)=="Stockfish:"))
-//		{
-//		move=answer.Substring(11,4);
-//		C0.c0_become_from_engine = ((answer.length<16)?"Q":(answer.Substring(15,1)).ToUpper());
-//		if(move.length>0)
-//			{
-//			message2show = answer.Substring(0,13)+"-"+answer.Substring(13);
-//			C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
-//			C0.c0_sidemoves=-C0.c0_sidemoves;
-//			}
-//		}
-//	else
-//		{
-//		C0.c0_become_from_engine = ((answer.length>5)?answer.Substring(6,1):"Q");
-//		if(C0.c0_D_can_be_moved(answer.Substring(0,2),answer.Substring(3,2)))
-//			{
-//			message2show="My move is " + answer;
-//			C0.c0_move_to(answer.Substring(0,2),answer.Substring(3,2));
-//			C0.c0_sidemoves=-C0.c0_sidemoves;
-//			}
-//		}
-//	}
-//engineStatus=0;
-//	}
+function DoEngineMovements():void	{
+	C0.c0_waitmove=(C0.c0_sidemoves==C0.c0_side);
+	
+	checkGameover();
+	
+	if(engineStatus==2)		{
+		(GameObject.Find("Script6")).SendMessage("SetDeepLevel",chess_strength.ToString());
+		(GameObject.Find("Script6")).SendMessage("SetRequestFEN",C0.c0_get_FEN());
+		engineStatus=3;
+	}
+}
+
+// this call receives answer from the chess engine... (from other object)
+function EngineAnswer(answer:String):void
+{
+	var move="";
+	if(answer.length>0)
+		{
+		if((answer.length>9) && (answer.Substring(0,10)=="Stockfish:"))
+			{
+			move=answer.Substring(11,4);
+			C0.c0_become_from_engine = ((answer.length<16)?"Q":(answer.Substring(15,1)).ToUpper());
+			if(move.length>0)
+				{
+				message2show = answer.Substring(0,13)+"-"+answer.Substring(13);
+				C0.c0_move_to(move.Substring(0,2),move.Substring(2,2));
+				C0.c0_sidemoves=-C0.c0_sidemoves;
+				hide=true;
+				alert=false;
+				}
+			}
+		else
+			{
+			C0.c0_become_from_engine = ((answer.length>5)?answer.Substring(6,1):"Q");
+			if(C0.c0_D_can_be_moved(answer.Substring(0,2),answer.Substring(3,2)))
+				{
+				message2show="My move is " + answer;
+				C0.c0_move_to(answer.Substring(0,2),answer.Substring(3,2));
+				C0.c0_sidemoves=-C0.c0_sidemoves;
+				hide=true;
+				alert=false;
+				}
+			}
+		}
+		engineStatus=0;
+}
 
 
 // Takeback and new game starting is like RollBack - one/all moves.
@@ -644,25 +620,49 @@ function RollBackAction():void
 			}	
 		if(TakeBackFlag)
 		{
-			C0.c0_take_back();
-			temp=white;
-			white=black;
-			black=temp;
-			TakeBackFlag=false;
+			if(mode==1)	{
+				C0.c0_take_back();
+				if(!(C0.c0_sidemoves==C0.c0_side)) C0.c0_take_back();
+				TakeBackFlag=false;
+			}
+			else if(mode==2) {
+				if(C0.c0_moveslist=="") {
+					TakeBackFlag=false;
+					setCamSide=true;
+				}
+				else {
+					C0.c0_take_back();
+					temp=white;
+					white=black;
+					black=temp;
+					TakeBackFlag=false;
+					if(white == "w") {setCamSide=true; setCamSide2=false;}
+	      			if(white != "w") {setCamSide=false; setCamSide2=true;}
+				}
+			}
 		}
 		if(NewGameFlag)
 		{
-			if(C0.c0_side>0) message2show ="WHITE TURN!";
-			else message2show ="BLACK TURN!";
-			C0.c0_set_start_position("");
-			C0.c0_sidemoves=1;
-			C0.c0_waitmove=false;
-			white="w";
-			black="b";
-			temp="";
-			//C0.c0_side=-C0.c0_side;
-			//C0.c0_waitmove=(C0.c0_side!=C0.c0_sidemoves);
-			NewGameFlag=false;
+			if(mode==1) {
+				C0.c0_set_start_position("");
+				C0.c0_sidemoves=1;
+				C0.c0_waitmove=false;
+				C0.c0_side=-C0.c0_side;
+				C0.c0_waitmove=(C0.c0_side==C0.c0_sidemoves);
+				NewGameFlag=false;
+			}
+			else if(mode==2) {
+				if(C0.c0_side==1) message2show ="WHITE TURN!";
+				else message2show ="BLACK TURN!";
+				C0.c0_set_start_position("");
+				C0.c0_sidemoves=1;
+				C0.c0_waitmove=true;
+				white="w";
+				black="b";
+				temp="";
+				setCamSide=true; setCamSide2=false;
+				NewGameFlag=false;
+			}
 		}	
 		
 		position2board();					// Set current position on the board visually...
@@ -674,49 +674,8 @@ function GetTimeDelta(min_interval:int, secs:int):int		// To slow animation on f
 	var dt= ((Time.deltaTime*min_interval)/secs).ToString();		// 3-seconds to move...
 	var pt=dt.IndexOf("."); if(pt<0) pt=dt.IndexOf(".");
 	var dt_int= System.Convert.ToInt32( ((pt<0)? dt : dt.Substring(0,pt)) );
+	
 	return Mathf.Max(min_interval,dt_int);
-}
-
-function jsJesterAccess(status:String):void
-{
- jsJesterAccessible=(status=="YES");
- if(!jsJesterAccessible)
-	{
-	usejsJester=false;
-	if(engineStatus>0)
-		{ 
-		engineStatus=0;			// actually pass to the next chess engine...
-		message2show = "jsJestercall error"; 
-		}
-	}
-}
-
-function CraftyAccess(status:String):void
-{
- CraftyAccessible=(status=="YES");
- if(!CraftyAccessible)
-	{
-	useCrafty=false;
-	if(engineStatus>0)
-		{ 
-		engineStatus=0;			// actually pass to the next chess engine...
-		message2show = "Craftycall error"; 
-		}
-	}
-}
-
-function RybkaAccess(status:String):void
-{
- RybkaAccessible=(status=="YES");
- if(!RybkaAccessible)
-	{
-	useRybka=false;
-	if(engineStatus>0)
-		{ 
-		engineStatus=0;			// actually pass to the next chess engine...
-		message2show = "Rybkacall error"; 
-		}
-	}
 }
 
 function StockfishAccess(status:String):void
@@ -731,20 +690,6 @@ function StockfishAccess(status:String):void
 		message2show = "Stockfishcall error"; 
 		}
 	}
-}
-// TCP connection related functions...
-//
-
-//Converts fics notation fen to normal fen... (just pieces, no castlings. fics notation is quite differrent)
-function convertFENnormal( ficsFEN )
-{
-	ficsFEN=ficsFEN.Replace(" ","/");
-	for(var q=8; q>0; q--)
-		{
-		var s=""; for(var w=1; w<=q; w++) s+="-";
-		ficsFEN=ficsFEN.Replace(s,q.ToString());
-		}
-	return ficsFEN;
 }
 
 function OnApplicationQuit():void { }
