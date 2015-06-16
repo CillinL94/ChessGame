@@ -33,13 +33,14 @@ function Start ()
  if(((Application.platform.ToString()).IndexOf("Windows")>=0) && ((Application.platform.ToString()).IndexOf("Web")<0))
 	{
 	var editpath=Application.dataPath;
-
-	if( (Application.platform.ToString()).IndexOf("WindowsEditor")<0 ) editpath = "";
-	else editpath = editpath.Substring(0,editpath.LastIndexOf("Assets"))+"Theta/stockfish_engine";
+	
+	if( (Application.platform.ToString()).IndexOf("WindowsEditor")<0 ) editpath= editpath.Substring(0,editpath.LastIndexOf("Final_Data"))+"stockfish_engine";
+	else editpath = editpath+"/stockfish_engine";
  
 	ExeConn = editpath + "/ExeConnector.exe";	
 	
 	Accessible = System.IO.File.Exists(ExeConn);			// if file exists...
+	
 	if(Accessible)
 		{
 		var at=ExeConn.LastIndexOf("/");

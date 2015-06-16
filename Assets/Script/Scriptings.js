@@ -67,7 +67,6 @@ var restart=false;
 var quit=false;
 var alert=false;
 var hide=false;
-	
 function setMeOnly():boolean{	//for mutllingual
 	english = finnish = irish = koreanish = false;
 	return true;
@@ -571,6 +570,7 @@ function DoEngineMovements():void	{
 function EngineAnswer(answer:String):void
 {
 	var move="";
+
 	if(answer.length>0)
 		{
 		if((answer.length>9) && (answer.Substring(0,10)=="Stockfish:"))

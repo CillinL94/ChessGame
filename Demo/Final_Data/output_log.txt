@@ -1,0 +1,55 @@
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [igdumdim32.dll 10.18.10.4013]
+    Renderer: Intel(R) HD Graphics 5500
+    Vendor:   Intel
+    VRAM:     3839 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=1 DF24=1 INTZ=1 RAWZ=0 NULL=1 RESZ=1 SlowINTZ=0
+desktop: 3200x1800 60Hz; virtual: 1280x720 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+Initialize engine version: 3.5.7f6
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\Assembly-UnityScript.dll (this message is harmless)
+Loading C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\Assembly-UnityScript.dll into Unity Child Domain
+- Completed reload, in  0.060 seconds
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\System.dll (this message is harmless)
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\UnityScript.Lang.dll (this message is harmless)
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\Boo.Lang.dll (this message is harmless)
+Platform assembly: C:\Users\sec\Desktop\Unity\Demo\Final_Data\Managed\Mono.Security.dll (this message is harmless)
+SocketException: 현재 연결은 원격 호스트에 의해 강제로 끊겼습니다.
+
+  at System.Net.Sockets.Socket+SocketAsyncResult.CheckIfThrowDelayedException () [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.EndReceive (IAsyncResult asyncResult, System.Net.Sockets.SocketError& errorCode) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.EndReceive (IAsyncResult result) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.NetworkStream.EndRead (IAsyncResult ar) [0x00000] in <filename unknown>:0 
+Rethrow as IOException: EndRead failure
+  at System.Net.Sockets.NetworkStream.EndRead (IAsyncResult ar) [0x00000] in <filename unknown>:0 
+  at System.Net.WebConnection.ReadDone (IAsyncResult result) [0x00000] in <filename unknown>:0 
+Rethrow as WebException: Error getting response stream (ReadDone1): ReceiveFailure
+  at System.Net.HttpWebRequest.EndGetResponse (IAsyncResult asyncResult) [0x00000] in <filename unknown>:0 
+  at System.Net.HttpWebRequest.GetResponse () [0x00000] in <filename unknown>:0 
+  at StockfishCall.ReadFromServer () [0x00000] in <filename unknown>:0 
+  at StockfishCall.Update () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+SocketException: 현재 연결은 원격 호스트에 의해 강제로 끊겼습니다.
+
+  at System.Net.Sockets.Socket+SocketAsyncResult.CheckIfThrowDelayedException () [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.EndReceive (IAsyncResult asyncResult, System.Net.Sockets.SocketError& errorCode) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.EndReceive (IAsyncResult result) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.NetworkStream.EndRead (IAsyncResult ar) [0x00000] in <filename unknown>:0 
+Rethrow as IOException: EndRead failure
+  at System.Net.Sockets.NetworkStream.EndRead (IAsyncResult ar) [0x00000] in <filename unknown>:0 
+  at System.Net.WebConnection.ReadDone (IAsyncResult result) [0x00000] in <filename unknown>:0 
+Rethrow as WebException: Error getting response stream (ReadDone1): ReceiveFailure
+  at System.Net.HttpWebRequest.EndGetResponse (IAsyncResult asyncResult) [0x00000] in <filename unknown>:0 
+  at System.Net.HttpWebRequest.GetResponse () [0x00000] in <filename unknown>:0 
+  at StockfishCall.ReadFromServer () [0x00000] in <filename unknown>:0 
+  at StockfishCall.Update () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
