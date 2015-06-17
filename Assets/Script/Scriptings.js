@@ -146,11 +146,16 @@ function OnGUI () {
 function Start ()	{
 	// Hide objects that are not visually needed... 
 	//(script 3d objects are just for scripting purposes, to hold chess programs and activate them frequently (frames per second)...
+	
 	GameObject.Find("Script2").renderer.enabled = false;			// Scriptings
 	if(C0.c0_side>0) message2show ="WHITE TURN!";
 	else message2show ="BLACK TURN!";
 	GameObject.Find("Script6").renderer.enabled = false;			// StockfischCall
 	ActivateCamera(true);
+	
+	GameObject.Find("StartupSplash").guiTexture.enabled = true;
+	yield WaitForSeconds(5);
+	GameObject.Find("StartupSplash").guiTexture.enabled = false;
 }
 
 // frames per second run part...
@@ -526,13 +531,22 @@ function DoPieceMovements():void	{
 }
 
 // check gameover...
-function checkGameover():void	{
+function checkGameover()	{
 	if((!gameover) && (engineStatus==0) && (move_animator<4))	{
 		if(C0.c0_D_is_check_to_king("w") || C0.c0_D_is_check_to_king("b"))			{
 			message2show = "Check+";
 			alert=true;
-			if( C0.c0_D_is_mate_to_king("w") ) {alert=false; message2show = "Checkmate!!!\n Black Win!!!"; gameover=true; }
-			if( C0.c0_D_is_mate_to_king("b") ) {alert=false; message2show = "Checkmate!!!\n White Win!!!"; gameover=true; }
+			if( C0.c0_D_is_mate_to_king("w") ) {alert=false; message2show = "Checkmate!!!\n Black Win!!!"; gameover=true;
+				GameObject.Find("AndroidWins").guiTexture.enabled = true;
+				yield WaitForSeconds(5);
+				GameObject.Find("AndroidWins").guiTexture.enabled = false;
+			  }
+			if( C0.c0_D_is_mate_to_king("b") ) {alert=false; message2show = "Checkmate!!!\n White Win!!!"; gameover=true;
+				GameObject.Find("AppleWins").guiTexture.enabled = true;
+				yield WaitForSeconds(5);
+				GameObject.Find("AppleWins").guiTexture.enabled = false;
+			
+			  }
 		}
 		else			{
 			if(((C0.c0_sidemoves>0) && C0.c0_D_is_pate_to_king("w")) || ((C0.c0_sidemoves<0) && C0.c0_D_is_pate_to_king("b")))
