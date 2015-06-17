@@ -50,6 +50,9 @@ var promo2Rook = false;
 var promo2Bishop = false;
 var promo2Knight = false;
 
+
+
+
 var menuArr = 
 	[
 		[ "English", "New Game", "Take Back", "Animation", "Top Camera", "Side Camera", "Brightness", "Promotion", "Pawn", "Rook", "Bishop", "Kngiht", "Queen"],
@@ -79,6 +82,8 @@ function setMeOnly2():boolean{	//for Promotions
 
 function OnGUI () {
 	var e : Event = Event.current;
+	
+	
 	
 	if(FirstStart) {
 		GUI.Box (Rect ((Screen.width-120)/2, (Screen.height-90)/2, 120, 90), "");
@@ -122,6 +127,7 @@ function OnGUI () {
 		koreanish=GUI.Toggle (Rect (Screen.width - 100, 350-65, 90, 22), koreanish, "Korean");
 		if(koreanish == true) { koreanish = setMeOnly(); lang_flag = 3;}
 		
+
 		
 		if(mode==1) {
 			GUI.Box (Rect (Screen.width - 130, 140, 120, 60), "Chess strength");
@@ -153,6 +159,8 @@ function Start ()	{
 	GameObject.Find("Script6").renderer.enabled = false;			// StockfischCall
 	ActivateCamera(true);
 	
+	
+	
 	GameObject.Find("StartupSplash").guiTexture.enabled = true;
 	yield WaitForSeconds(5);
 	GameObject.Find("StartupSplash").guiTexture.enabled = false;
@@ -160,12 +168,16 @@ function Start ()	{
 
 // frames per second run part...
 function Update ()	{
+
+	
 	if (restart) {  
     	Application.LoadLevel (0);  
   	}  
   	if (quit) {
 		Application.Quit();
 	}
+	
+	
 	if(!C0.c0_moving)	ActivateCamera(false);
 	if(FirstStart) {// could be right in Start(), anyway it's the same..., sometimes good to wait a bit while all the objects are being created...		
 		if(mode==1 || mode==2) {
@@ -182,7 +194,9 @@ function Update ()	{
 			C0.c0_side=1;							// This side is white.   For black set -1
 			C0.c0_waitmove=true;					// Waiting for mouse drag...
 			C0.c0_set_start_position("");		// Set the initial position... 
-		}	
+		}
+
+	
 	}
 	
 	DoPieceMovements();							// All the movements of pieces (constant frames per second for rigidbody x,y,z)...
@@ -705,5 +719,7 @@ function StockfishAccess(status:String):void
 		}
 	}
 }
+
+
 
 function OnApplicationQuit():void { }
