@@ -14,14 +14,4 @@ Platform assembly: C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWar
 Loading C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\UnityEngine.dll into Unity Child Domain
 Platform assembly: C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\Assembly-UnityScript.dll (this message is harmless)
 Loading C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\Assembly-UnityScript.dll into Unity Child Domain
-- Completed reload, in  0.066 seconds
-Platform assembly: C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\System.dll (this message is harmless)
-Platform assembly: C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\UnityScript.Lang.dll (this message is harmless)
-Platform assembly: C:\Users\Mikko\Documents\GitHub\ChessGame\Demo\BonusGameOSWars_Data\Managed\Boo.Lang.dll (this message is harmless)
-ArgumentOutOfRangeException: Cannot be negative.
-Parameter name: length
-  at System.String.Substring (Int32 startIndex, Int32 length) [0x00000] in <filename unknown>:0 
-  at StockfishCall.Start () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
+- Completed reload, in  0.069 seconds
