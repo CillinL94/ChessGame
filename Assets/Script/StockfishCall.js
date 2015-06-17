@@ -14,7 +14,7 @@ var Answer="";
 
 var EngineStatus=0;			// Status of Stockfish engine...
 
-var EngineStN=3;				// Depth to think for Stockfish...
+var EngineStN=1;				// Depth to think for Stockfish...
 
 var EngineTimeout:float=0;
 
@@ -34,10 +34,10 @@ function Start ()
 	{
 	var editpath=Application.dataPath;
 	
-	if( (Application.platform.ToString()).IndexOf("WindowsEditor")<0 ) editpath= editpath.Substring(0,editpath.LastIndexOf("Final_Data"))+"stockfish_engine";
-	else editpath = editpath+"/stockfish_engine";
+	if( (Application.platform.ToString()).IndexOf("WindowsEditor")<0 ) editpath= editpath.Substring(0,editpath.LastIndexOf("Final_Data"));
+	else editpath = editpath= editpath.Substring(0,editpath.LastIndexOf("Assets"))+"Demo/";
  
-	ExeConn = editpath + "/ExeConnector.exe";	
+	ExeConn = editpath + "stockfish_engine/ExeConnector.exe";	
 	
 	Accessible = System.IO.File.Exists(ExeConn);			// if file exists...
 	
@@ -78,7 +78,7 @@ if(Accessible)
 		}
 	if(EngineStatus==10)
 		{
-		SendToServer("position fen " +Request_FEN+"\n"+"go depth "+(EngineStN*2).ToString()+"\n");
+		SendToServer("position fen " +Request_FEN+"\n"+"go depth "+(EngineStN).ToString()+"\n");
 		EngineStatus=15; 
 		Request_FEN=""; Answer="";
 		}
@@ -106,7 +106,7 @@ if(!Accessible) { EngineStatus=-1;	Request_FEN=""; Answer=""; }
 
 function SetDeepLevel(strength:String):void	// Calls from outside...
 {
-EngineStN=3 + (( System.Convert.ToInt32( strength ) - 1 ));		// set seconds to think...
+EngineStN=1 + (( System.Convert.ToInt32( strength ) - 1 ));		// set seconds to think...
 }
 
 function SetRequestFEN(FENs:String):void		// Calls from outside...
@@ -118,6 +118,7 @@ function ReadFromServer():void							// Buffered get from local web... Fast enou
 	{
 		var buffer="";
 		var request:HttpWebRequest = WebRequest.Create("http://localhost:5052/IN_BUFFER.txt") as HttpWebRequest;
+		//request.Timeout=1;
 		if(!(request==null))
 		{
 		var response:HttpWebResponse = request.GetResponse();
